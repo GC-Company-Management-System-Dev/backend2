@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>각 세부항목</title>
+    <th:block th:replace="fragments/head :: common-head"></th:block>
+    <style>
+        /* 스타일링 코드 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px; /* 각 셀 사이의 간격 */
+            width: 100%; /* 부모 요소에 대한 높이를 100%로 설정하여 전체 화면을 채우도록 함 */
+            height: 100%; /* 부모 요소에 대한 높이를 100%로 설정하여 전체 화면을 채우도록 함 */
+        }
+
+        .grid-container .section {
+            border: 1px solid black;
+            padding: 20px;
+            display: flex;
+            flex-direction: column; /* 섹션을 수직으로 정렬하기 위해 column으로 설정 */
+        }
+
+        .overflow-scroll {
+            overflow-y: auto; /* 수직 스크롤을 활성화합니다. */
+        }
+
+        h2 {
+            font-size: 16px; /* 원하는 크기로 조정합니다. */
+            font-weight: bold; /* 텍스트를 볼드로 처리합니다. */
+        }
+
+        /* 체크박스 스타일링 */
+        input[type="checkbox"] {
+            transform: scale(1.5); /* 체크박스 크기 키우기 */
+            margin-right: 10px; /* 체크박스와 라벨 사이의 간격 조절 */
+        }
+
+        /* 수정 모달 레이어 스타일 */
+        .modal {
+            display: none; /* 기본적으로 모달은 숨김 */
+            position: fixed; /* 화면에 고정 */
+            z-index: 1; /* 다른 요소들보다 위에 위치 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* 스크롤바 허용 */
+            background-color: rgba(0, 0, 0, 0.4); /* 배경 색상과 투명도 설정 */
+        }
+
+        .modal-content {
+            background-color: #fefefe; /* 모달 내부 콘텐츠 배경색 */
+            margin: 10% auto; /* 모달을 수직 가운데로 정렬 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%; /* 모달 너비 */
+            height: 80%; /* 세로 길이를 두 배로 늘립니다. */
+        }
+
+        .close {
+            color: #aaa;
+            margin-left: auto;
+            margin-top: -20px; /* X 버튼을 위로 조금 이동시킵니다. */
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-table {
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-table .td {
+            padding: 10px;
+        }
+
+        .modal-button {
+            display: block; /* 블록 레벨 요소로 변경하여 중앙 정렬 */
+            margin: 20px auto 0; /* 버튼을 상단 여백을 둔 채 가운데로 정렬합니다. */
+            padding: 10px 20px;
+            background-color: #ff3333; /* 버튼 배경색 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+
+        /*파일 업로드*/
+        #root {
+            width: 100%;
+            height: 100%;
+        }
+
+        .contents {
+            display: flex;
+            flex-direction: column;
+        }
+        .contents .upload-box {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contents .upload-box .drag-file {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 3px dashed #dbdbdb;
+        }
+        .contents .upload-box .drag-file.highlight {
+            border: 3px dashed red;
+        }
+        .contents .upload-box .drag-file .image {
+            margin-top: 10px;
+            width: 40px;
+        }
+        .contents .upload-box .drag-file .message {
+            /* margin-bottom: 0; */
+        }
+        .contents .upload-box .file-label {
+            margin-top: 10px;
+            margin-left: auto;
+            background-color: #4f4f4f;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            width: 20%;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .contents .upload-box .file {
+            display: none;
+        }
+
+        .contents .files {
+            width: 100%;
+            box-sizing: border-box;
+            overflow: auto;
+            height: 30%;
+        }
+        .contents .files .file {
+            display: flex;
+            padding: 10px 10px;
+            border-bottom: 1px solid #dbdbdb;
+        }
+        .contents .files .file:last-child {
+            margin-bottom: 0px;
+            border-bottom: none;
+        }
+
+        .contents .files .file .thumbnail {
+            display: flex;
+            flex: none;
+            width: 100px;
+            align-items: center;
+        }
+
+        .contents .files .file .details {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        .contents .files .file .details .header {
+            display: flex;
+        }
+        .contents .files .file .details .header .name {
+            width: 70%;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .contents .files .file .details .header .size {
+            margin-left: auto;
+            margin-right: 30px;
+        }
+
+
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<main class="d-flex flex-nowrap">
+    <div th:replace="fragments/sidebar :: sidebar"></div>
+    <div class="content p-4 main-contents">
+        <p class="table_name" style="display: flex; align-items: center; margin-right: auto;"> 세부 항목 이름</p>
+        <div style="display: flex; align-items: center; margin-left: auto;">
+            <input type="checkbox" id="status-completion" name="status-completion">
+            <label for="status-completion">작성 완료</label>
+        </div>
+
+        <div class="grid-container">
+            <!-- 섹션 2: 인증 항목 내용 -->
+            <div class="section" style="grid-column: 1; grid-row: 1; width: 100%; height: 100%; overflow-y: auto;">
+                <div style="display: flex; align-items: center;">
+                    <h2>인증 항목 내용</h2>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-certification')">수정</button>
+                </div>
+                <div id="certification-details" style="height: 100%;">
+                    <!-- 인증 항목 기준 및 관련 내용 표 -->
+                    <table border="1" style="width: 100%; height: 100%;">
+                        <tr style="height: 20%;">
+                            <th style="width: 20%;">구분</th>
+                            <th style="width: 80%;">내용</th>
+                        </tr>
+                        <tr>
+                            <th>인증기준</th>
+                            <td>인증 기준 내용</td>
+                        </tr>
+                        <tr>
+                            <th>주요 확인사항</th>
+                            <td>주요 확인사항 내용</td>
+                        </tr>
+                        <tr>
+                            <th>관련 법규</th>
+                            <td>관련 법규 내용</td>
+                        </tr>
+                        <!-- 나머지 항목 추가 -->
+                    </table>
+                </div>
+            </div>
+
+            <!-- 인증 항목 내용 모달 레이어 -->
+            <div id="editModal-certification" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('editModal-certification')">&times;</span>
+                    <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">인증항목 내용 수정</h2>
+                    <form id="editForm-certification" style="width: 100%; height: 100%">
+                        <table class="modal-table">
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modificationDate1">일시</label></th>
+                                <td><input type="text" id="modificationDate1" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modifier1">변경자</label></th>
+                                <td><input type="text" id="modifier1" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 30%">
+                                <th style="width: 20%; text-align: right;"><label for="certificationStandard">인증기준</label></th>
+                                <td colspan="2"><textarea id="certificationStandard" name="certificationStandard" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                            <tr style="height: 40%">
+                                <th style="width: 20%; text-align: right;"><label for="majorPoints">주요 확인사항</label></th>
+                                <td colspan="2"><textarea id="majorPoints" name="majorPoints" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="relatedLaws">관련 법규</label></th>
+                                <td colspan="2"><textarea id="relatedLaws" name="relatedLaws" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                        </table>
+                        <button type="button" id="modal-button-certification" onclick="saveChangesCertification()" class="modal-button">등록하기</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 섹션 3: 운영 현황 -->
+            <div class="section" style="grid-column: 2; grid-row: 1; width: 100%; height: 100%; overflow-y: auto;">
+                <div style="display: flex; align-items: center;">
+                    <h2>운영 현황</h2>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-operational')">수정</button>
+                </div>
+                <div id="operational-status" style="height: 100%;">
+                    <!-- 운영 현황 표 -->
+                    <table border="1" style="width: 100%; height: 100%;">
+                        <tr style="height: 20%;">
+                            <th style="width: 50%;">현황</th>
+                            <th style="width: 20%;">관련 문서</th>
+                            <th style="width: 30%;">증적</th>
+                        </tr>
+                        <tr>
+                            <td>현황 내용</td>
+                            <td>관련 문서 내용</td>
+                            <td>증적 내용</td>
+                        </tr>
+                        <!-- 나머지 항목 추가 -->
+                    </table>
+                </div>
+            </div>
+
+            <!-- 운영 현황 모달 레이어 -->
+            <div id="editModal-operational" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('editModal-operational')">&times;</span>
+                    <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">운영 현황 수정</h2>
+                    <form id="editForm-operational" style="width: 100%; height: 100%">
+                        <table class="modal-table">
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modificationDate2">일시</label></th>
+                                <td><input type="text" id="modificationDate2" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modifier2">변경자</label></th>
+                                <td><input type="text" id="modifier2" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 60%">
+                                <th style="width: 20%; text-align: right;"><label for="currentSituation">현황</label></th>
+                                <td colspan="2"><textarea id="currentSituation" name="currentSituation" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="documentName">문서명</label></th>
+                                <td colspan="2"><textarea id="documentName" name="documentName" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="evidenceName">증적명</label></th>
+                                <td colspan="2"><textarea id="evidenceName" name="evidenceName" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                        </table>
+                        <button type="button" id="modal-button-operational" onclick="saveChangesOperational()" class="modal-button">등록하기</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 섹션 4: 증적자료 -->
+            <div class="section" style="grid-column: 1; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
+                <div style="display: flex; align-items: center;">
+                    <h2>증적자료</h2>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof')">수정</button>
+                </div>
+                <div id="proof-upload" style="height: 100%;">
+
+                    <div id="uploaded-files" class="files">
+                        <!-- 여기에 업로드된 파일 목록이 표시됩니다. -->
+
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- 증적자료 모달 레이어 -->
+            <div id="editModal-proof" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('editModal-proof')">&times;</span>
+                    <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">증적자료 업로드</h2>
+                    <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data">
+                        <table class="modal-table">
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modificationDate3">일시</label></th>
+                                <td><input type="text" id="modificationDate3" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modifier3">변경자</label></th>
+                                <td><input type="text" id="modifier3" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 80%">
+                                <th style="width: 20%; text-align: right;"><label for="drop-file">파일 선택</label></th>
+                                <td>
+
+                                    <div id="root">
+                                        <div class="contents">
+                                            <div class="upload-box">
+                                                <div id="drop-file" class="drag-file">
+                                                    <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일 아이콘" class="image">
+                                                    <p class="message">Drag files to upload</p>
+                                                </div>
+                                                <label class="file-label" for="chooseFile">파일 선택</label>
+                                                <input class="file" id="chooseFile" type="file" multiple onchange="dropFile.handleFiles(this.files)">
+                                            </div>
+                                            <div id="files" class="files">
+                                                <div class="file">
+                                                    <div class="header">
+                                                        <span class="name"></span>
+                                                        <span class="size"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </table>
+                        <button type="submit" id="modal-button-proof" class="modal-button">등록하기</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 증적자료 업로드 -->
+            <script>
+
+                function DropFile(dropAreaId, fileListId) {
+                    let dropArea = document.getElementById(dropAreaId);
+                    let fileList = document.getElementById(fileListId);
+
+                    function preventDefaults(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    function highlight(e) {
+                        preventDefaults(e);
+                        dropArea.classList.add("highlight");
+                    }
+
+                    function unhighlight(e) {
+                        preventDefaults(e);
+                        dropArea.classList.remove("highlight");
+                    }
+
+                    function handleDrop(e) {
+                        unhighlight(e);
+                        let dt = e.dataTransfer;
+                        let files = dt.files;
+
+                        handleFiles(files);
+
+                        const fileList = document.getElementById(fileListId);
+                        if (fileList) {
+                            fileList.scrollTo({ top: fileList.scrollHeight });
+                        }
+                    }
+
+                    function handleFiles(files) {
+                        files = [...files];
+                        files.forEach(previewFile);
+                    }
+
+                    function previewFile(file) {
+                        console.log(file);
+                        fileList.appendChild(renderFile(file));
+                    }
+
+                    function deleteFile(fileDOM) {
+                        fileDOM.remove();
+                    }
+
+                    function formatFileSize(sizeInBytes) {
+                        const kilobyte = 1024;
+                        const megabyte = kilobyte * 1024;
+                        const gigabyte = megabyte * 1024;
+
+                        if (sizeInBytes < kilobyte) {
+                            return sizeInBytes + ' Bytes';
+                        } else if (sizeInBytes < megabyte) {
+                            return (sizeInBytes / kilobyte).toFixed(2) + ' KB';
+                        } else if (sizeInBytes < gigabyte) {
+                            return (sizeInBytes / megabyte).toFixed(2) + ' MB';
+                        } else {
+                            return (sizeInBytes / gigabyte).toFixed(2) + ' GB';
+                        }
+                    }
+
+                    function renderFile(file) {
+                        let fileDOM = document.createElement("div");
+                        fileDOM.className = "file";
+                        fileDOM.innerHTML = `
+                                  <div class="details">
+                                    <div class="header">
+                                      <span class="name">${file.name}</span>
+                                      <span class="size">${formatFileSize(file.size)}</span>
+                                      <button class="delete-btn" onclick="deleteFile(this.parentNode.parentNode.parentNode)">X</button>
+                                    </div>
+                                  </div>
+                                `;
+
+                        // 파일 엘리먼트를 업로드된 파일 목록에 추가
+                        const uploadedFiles = document.getElementById("uploaded-files");
+                        uploadedFiles.appendChild(fileDOM);
+
+                        return fileDOM;
+                    }
+
+                    function downloadFile(fileURL) {
+                        // 파일 다운로드 로직을 여기에 추가
+                        // 예를 들어, 새 탭에서 파일 다운로드 URL을 열도록 하거나, AJAX 요청을 사용하여 파일을 다운로드할 수 있습니다.
+                        window.open(fileURL, '_blank');
+                    }
+
+                    dropArea.addEventListener("dragenter", highlight, false);
+                    dropArea.addEventListener("dragover", highlight, false);
+                    dropArea.addEventListener("dragleave", unhighlight, false);
+                    dropArea.addEventListener("drop", handleDrop, false);
+
+                    return {
+                        handleFiles
+                    };
+                }
+
+                const dropFile = new DropFile("drop-file", "files");
+
+            </script>
+
+
+            <!-- 섹션 5: 결함 관리 -->
+            <div class="section" style="grid-column: 2; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
+                <div style="display: flex; align-items: center;">
+                    <h2>결함 관리</h2>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-defects')">수정</button>
+                </div>
+                <div id="defects-management" style="height: 100%;">
+                    <!-- 결함 관리 표 -->
+                    <table border="1" style="width: 100%; height: 100%;">
+                        <tr style="height: 20%;">
+                            <th style="width: 20%;">구분</th>
+                            <th style="width: 80%;">결함 내용</th>
+                        </tr>
+                        <tr>
+                            <th>ISMS-P</th>
+                            <td>ISMS-P 내용</td>
+                        </tr>
+                        <tr>
+                            <th>ISO 27K</th>
+                            <td>ISO 27K 내용</td>
+                        </tr>
+                        <tr>
+                            <th>PCI-DSS</th>
+                            <td>PCI-DSS 내용</td>
+                        </tr>
+                        <!-- 나머지 결함 내용 추가 -->
+                    </table>
+                </div>
+            </div>
+
+            <!-- 결함 관리 모달 레이어 -->
+            <div id="editModal-defects" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('editModal-defects')">&times;</span>
+                    <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">결함 관리 수정</h2>
+                    <form id="editForm-defects" style="width: 100%; height: 100%">
+                        <table class="modal-table">
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modificationDate4">일시</label></th>
+                                <td><input type="text" id="modificationDate4" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="modifier4">변경자</label></th>
+                                <td><input type="text" id="modifier4" style="width: 100%; height: 100%" readonly></td>
+                            </tr>
+                            <tr style="height: 10%">
+                                <th style="width: 20%; text-align: right;"><label for="certificationType">인증 구분</label></th>
+                                <td>
+                                    <select id="certificationType" name="certificationType" style="width: 100%; height: 100%">
+                                        <option value="ISMS-P">ISMS-P</option>
+                                        <option value="ISO 27K">ISO 27K</option>
+                                        <option value="PCI-DSS">PCI-DSS</option>
+                                        <!-- 다른 인증 구분 추가 -->
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr style="height: 80%">
+                                <th style="width: 20%; text-align: right;"><label for="defectContent">결함 내용</label></th>
+                                <td colspan="2"><textarea id="defectContent" name="defectContent" style="width: 100%; height: 100%" required></textarea></td>
+                            </tr>
+                        </table>
+                        <button type="button" id="modal-button-defects" onclick="saveChangesDefects()" class="modal-button">등록하기</button>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                // 모달 열기 함수
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    modal.style.display = "block";
+                }
+
+                // 모달 닫기 함수
+                function closeModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    modal.style.display = "none";
+                }
+
+                // 수정 내용 처리 함수
+                // 인증 항목 내용 수정 처리 함수
+                function saveChangesCertification() {
+                    var certificationStandard = document.getElementById("certificationStandard").value;
+                    var majorPoints = document.getElementById("majorPoints").value;
+                    var relatedLaws = document.getElementById("relatedLaws").value;
+
+                    console.log("인증기준:", certificationStandard);
+                    console.log("주요 확인사항:", majorPoints);
+                    console.log("관련 법규:", relatedLaws);
+
+                    var currentDate = new Date();
+                    var formattedDate = currentDate.toLocaleString();
+
+                    document.getElementById("modificationDate1").value = formattedDate;
+                    document.getElementById("modifier1").value = "사용자";
+
+                    closeModal('editModal-certification');
+                }
+
+                // 운영 현황 수정 처리 함수
+                function saveChangesOperational() {
+                    var currentSituation = document.getElementById("currentSituation").value;
+                    var documentName = document.getElementById("documentName").value;
+                    var evidenceName = document.getElementById("evidenceName").value;
+
+                    console.log("현황:", currentSituation);
+                    console.log("문서명:", documentName);
+                    console.log("증적명:", evidenceName);
+
+                    var currentDate = new Date();
+                    var formattedDate = currentDate.toLocaleString();
+
+                    document.getElementById("modificationDate2").value = formattedDate;
+                    document.getElementById("modifier2").value = "사용자";
+
+                    closeModal('editModal-operational');
+                }
+
+                // 증적자료 업로드 처리 함수
+                function saveChangesProofUpload() {
+                    var proofFiles = document.getElementById("proofFile").files;
+
+                    console.log("업로드한 파일 수:", proofFiles.length);
+                    // 파일 업로드 및 처리 로직을 여기에 추가
+                    // 모달의 등록하기 버튼 클릭 시 파일 업로드를 처리
+                    document.getElementById("modal-button-proof").addEventListener("click", function(event) {
+                        event.preventDefault();
+                        const files = document.getElementById("chooseFile").files;
+                        handleFiles(files);
+                        closeModal('editModal-proof');
+                    });
+
+                    var currentDate = new Date();
+                    var formattedDate = currentDate.toLocaleString();
+
+                    document.getElementById("modificationDate3").value = formattedDate;
+                    document.getElementById("modifier3").value = "사용자";
+
+                    closeModal('editModal-proof');
+                }
+
+                // 결함 관리 수정 처리 함수
+                function saveChangesDefects() {
+                    var certificationType = document.getElementById("certificationType").value;
+                    var defectContent = document.getElementById("defectContent").value;
+
+                    console.log("인증 구분:", certificationType);
+                    console.log("결함 내용:", defectContent);
+
+                    var currentDate = new Date();
+                    var formattedDate = currentDate.toLocaleString();
+
+                    document.getElementById("modificationDate4").value = formattedDate;
+                    document.getElementById("modifier4").value = "사용자";
+
+                    closeModal('editModal-defects');
+                }
+            </script>
+
+
+        </div>
+    </div>
+</main>
+<!--<div th:replace="fragments/footer :: footer"></div>-->
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>메인 페이지</title>
+  <th:block th:replace="fragments/head :: common-head"></th:block>
+  <style>
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    #datepicker-container {
+      display: flex;
+      margin-top: 0px;
+      height: 25px;
+      margin-left: 60%;
+    }
+
+    #datepicker {
+      margin-right: 10px; /* Datepicker 오른쪽 여백 설정 */
+      height: 25px;
+    }
+
+    .search-button { /*우측 상단 날짜 검색 버튼*/
+      height: 25px;
+      border: 1px solid red;
+      background-color: transparent;
+      color: red;
+      padding: 0 12px;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 5px; /* 모서리를 10픽셀만큼 둥글게 설정 */
+    }
+
+    .chart-container {
+      width: 350px; /* 원하는 가로 크기 */
+      height: 350px; /* 세로 크기 */
+      align-items: center;
+      justify-content: center; /* 가로로 가운데 정렬 */
+      padding: 0 40px;
+      margin-top: 20px; /* 추가된 차트와 "Dash Board" 사이의 간격 조정 */
+      text-align: center; /* 그래프 아래에 텍스트 중앙 정렬 */
+    }
+
+    .progress-info {
+      width: 200px;
+      height: 40px;
+      align-items: center;
+      justify-content: center; /* 가로로 가운데 정렬 */
+      display: flex;
+      margin: 0 auto; /* 가운데 정렬을 위한 margin 설정 */
+      margin-bottom: 5px;
+      background-color: rgba(255, 0, 0, 0.1);
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+
+    .progress-title {
+      font-size: 14px;
+      color: white; /* 글자색 설정 */
+      background-color: red; /* 배경색 설정 */
+      padding: 5px; /* 내부 여백 설정 */
+      border-radius: 5px; /* 모서리 둥글게 설정 */
+      margin-right: 20px; /* 오른쪽 여백 설정 */
+    }
+
+    .progress-label, .progress-count {
+      font-size: 14px; /* 글자 크기 설정 */
+      margin-right: 20px; /* 아이템 간 간격 조정 */
+    }
+
+    .line-chart-container {
+      text-align: center; /* 가로 방향 가운데 정렬 */
+      display: flex; /* 세로 중앙 정렬을 위해 flex 설정 추가 */
+      align-items: center; /* 세로 중앙 정렬 */
+    }
+
+    .progress-label {
+      color: red; /* 진행도 글자색을 빨간색으로 설정 */
+    }
+
+    .progress-count {
+      color: blue; /* 수행한 항목 글자색을 파란색으로 설정 */
+    }
+  </style>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
+  <script>
+    $(function() {
+      $(".search-button").hover(
+              function() {
+                // 마우스 오버 시
+                $(this).css({
+                  "border-color": "white",
+                  "color": "white",
+                  "background-color": "red"
+                });
+              },
+              function() {
+                // 마우스 아웃 시
+                $(this).css({
+                  "border-color": "red",
+                  "color": "red",
+                  "background-color": "transparent"
+                });
+              }
+      );
+    });
+
+
+    $(function () {
+      $("#datepicker").datepicker();
+    });
+
+    $(function () {
+      $(".search-button").click(function () {
+        $("#datepicker").datepicker("show");
+      });
+    });
+  </script>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<main class="d-flex flex-nowrap">
+  <div th:replace="fragments/sidebar :: sidebar"></div>
+  <div class="content p-4 main-contents" style="overflow-y: scroll">
+    <div class="header-container">
+      <h1 style="color: red; font-size: 24px; justify-content: center; align-items: center;">Dash Board</h1>
+    </div>
+    <div id="datepicker-container">
+      <i class="fas fa-calendar-alt" style="margin-right: 5px; width: 23px; height: 23px;"></i>
+      <input type="text" id="datepicker">
+      <button class="search-button" type="button">검색</button>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 100%;">
+
+      <!-- 첫 번째 도넛 그래프 -->
+      <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
+        <canvas id="myChart1"></canvas>
+        <div class="progress-info">
+          <div class="progress-title">진행현황</div>
+          <div class="progress-count">8/10</div>
+          <div class="progress-label">80%</div>
+        </div>
+      </div>
+
+      <!-- 두 번째 도넛 그래프 -->
+      <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
+        <canvas id="myChart2"></canvas>
+        <div class="progress-info">
+          <div class="progress-title">진행현황</div>
+          <div class="progress-count">9/10</div>
+          <div class="progress-label">90%</div>
+        </div>
+      </div>
+
+      <!-- 세 번째 도넛 그래프 -->
+      <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
+        <canvas id="myChart3"></canvas>
+        <div class="progress-info">
+          <div class="progress-title">진행현황</div>
+          <div class="progress-count">7/10</div>
+          <div class="progress-label">72%</div>
+        </div>
+
+      </div>
+
+      <!-- 선 그래프 -->
+      <div class="line-chart-container chart-container" style="flex-basis: 100%; margin-top: 50px;">
+        <canvas id="myLineChart"></canvas>
+      </div>
+
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const circle_data1 = {
+          labels: [
+            '진행율',
+            '미진행율',
+          ],
+          datasets: [{
+            label: '관리체제 수립 및 운영',
+            data: [80, 20],
+            backgroundColor: [
+              'rgb(255, 99, 132)',
+              'rgb(141,138,138)',
+            ],
+            hoverOffset: 4,
+          }]
+        };
+
+        const circle_config1 = {
+          type: 'doughnut',
+          data: circle_data1,
+          options: {
+            cutout: 80,
+            plugins: {
+              title: {
+                display: true,
+                text: '관리체제 수립 및 운영',
+                font: {
+                  size: 16
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            },
+            animation: false
+          }
+        };
+
+        const circle_data2 = {
+          labels: [
+            '진행율',
+            '미진행율',
+          ],
+          datasets: [{
+            label: '보호대책 요구사항',
+            data: [90, 10],
+            backgroundColor: [
+              'rgb(255, 205, 86)',
+              'rgb(141,138,138)',
+            ],
+            hoverOffset: 4
+          }]
+        };
+
+        const circle_config2 = {
+          type: 'doughnut',
+          data: circle_data2,
+          options: {
+            cutout: 80,
+            plugins: {
+              title: {
+                display: true,
+                text: '보호대책 요구사항',
+                font: {
+                  size: 16
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            },
+            animation: false
+          }
+        };
+
+        const circle_data3 = {
+          labels: [
+            '진행율',
+            '미진행율',
+          ],
+          datasets: [{
+            label: '개인정보 처리단계별 요구사항',
+            data: [72, 28],
+            backgroundColor: [
+              'rgb(149,239,131)',
+              'rgb(141,138,138)',
+            ],
+            hoverOffset: 4
+          }]
+        };
+
+        const circle_config3 = {
+          type: 'doughnut',
+          data: circle_data3,
+          options: {
+            cutout: 80,
+            plugins: {
+              title: {
+                display: true,
+                text: '개인정보 처리단계별 요구사항',
+                font: {
+                  size: 16
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            },
+            animation: false
+          }
+        };
+
+        var ctx1 = document.getElementById('myChart1').getContext('2d');
+        new Chart(ctx1, circle_config1);
+
+        var ctx2 = document.getElementById('myChart2').getContext('2d');
+        new Chart(ctx2, circle_config2);
+
+        var ctx3 = document.getElementById('myChart3').getContext('2d');
+        new Chart(ctx3, circle_config3);
+
+        const labels = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        const line_data1 = {
+          labels: labels,
+          datasets: [{
+            label: '관리체계',
+            data: [23, 32, 39, 44, 50, 55, 57, 59, 60, 66, 70, 72],
+            fill: false,
+            borderColor: 'rgb(252,4,49)',
+            tension: 0.1
+          },
+            {
+              label: '보호대책',
+              data: [20, 30, 30, 40, 50, 60, 65, 70, 75, 80, 85, 90],
+              fill: false,
+              borderColor: 'rgb(255,218,75)',
+              tension: 0.1
+            },
+            {
+              label: '개인정보보호',
+              data: [0, 14, 28, 32, 38, 42, 50, 54, 64, 74, 89, 95],
+              fill: false,
+              borderColor: 'rgb(109,189,14)',
+              tension: 0.1
+            },
+          ]
+        };
+
+        const line_config1 = {
+          type: 'line',
+          data: line_data1,
+          options: {
+            maintainAspectRatio: false, // 세로 길이 유지 X
+            scales: {
+              y: {
+                ticks: {
+                  suggestedMin: 0, // Set the minimum value
+                  suggestedMax: 100, // Set the maximum value
+                  stepSize: 50, // Set the interval between ticks
+                  callback: function(value, index, values) {
+                    return value === 0 || value === 50 || value === 100 ? value : '';
+                  }
+                }
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: '월간 인증 진척률 추이',
+                font: {
+                  size: 24,
+                },
+                color: "red"
+              },
+              legend: {
+                display: false
+              }
+            },
+            animation: false
+          }
+        };
+
+        var line_ctx1 = document.getElementById('myLineChart').getContext('2d');
+        new Chart(line_ctx1, line_config1);
+      });
+    </script>
+
+  </div>
+</main>
+</body>
+</html>
