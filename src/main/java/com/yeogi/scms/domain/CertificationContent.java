@@ -2,7 +2,7 @@ package com.yeogi.scms.domain;
 
 import java.time.LocalDateTime;
 
-public class CertificationItemContent {
+public class CertificationContent {
     private Long sequence;
     private String detailItemCode;
     private String certificationCriteria;
