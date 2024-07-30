@@ -82,15 +82,17 @@ public class MainController {
         return "privacyRequire";
     }
 
-    @GetMapping("/log-manage")
-    public String showLogManagement() {
-        return "logManage";
-    }
-
     @GetMapping("/{detailItemCode}")
     public String showDetail(@PathVariable String detailItemCode, Model model) {
         CertifDetail detail = certifDetailService.getCertifDetailByDCode(detailItemCode);
         model.addAttribute("detail", detail);
         return "detail-template";
     }
+
+    @GetMapping("/log-manage")
+    public String showLogManagement() {
+        return "logManage";
+    }
+
+
 }
