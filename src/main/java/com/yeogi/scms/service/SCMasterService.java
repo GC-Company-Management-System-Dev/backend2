@@ -1,7 +1,9 @@
 package com.yeogi.scms.service;
 
+import com.yeogi.scms.domain.CertifDetail;
 import com.yeogi.scms.domain.SCMaster;
-import com.yeogi.scms.repository.SCMasterRepository;
+import com.yeogi.scms.repository.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +21,8 @@ public class SCMasterService {
         this.repository = repository;
     }
 
-    public List<SCMaster> getFilteredSCMaster(String prefix) {
-        List<SCMaster> allRecords = repository.findByDocumentCode(prefix);
+    public List<SCMaster> getFilteredSCMaster(String sccode) {
+        List<SCMaster> allRecords = repository.findBySCCode(sccode);
 
         // 최신 생성일을 가진 행의 인증년도를 찾음
         Optional<SCMaster> latestRecordOpt = allRecords.stream()
@@ -37,5 +39,6 @@ public class SCMasterService {
 
         return List.of();
     }
+
 
 }
