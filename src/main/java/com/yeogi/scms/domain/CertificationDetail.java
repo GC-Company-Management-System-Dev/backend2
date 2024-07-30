@@ -2,25 +2,34 @@ package com.yeogi.scms.domain;
 
 import java.time.LocalDateTime;
 
-public class SecurityCertificationMaster {
-    private String documentCode;
+public class CertificationDetail {
+    private String detailItemCode;
+    private String securityCertificationMasterCode;
     private String classificationCode;
     private int certificationYear;
     private String itemCode;
-    private String certificationTypeName;
-    private String isoDetails;
-    private String pciDssDetails;
+    private String detailItemTypeName;
+    private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private int monthlyIndex;
 
     // Getters and setters
 
-    public String getDocumentCode() {
-        return documentCode;
+    public String getDetailItemCode() {
+        return detailItemCode;
     }
 
-    public void setDocumentCode(String documentCode) {
-        this.documentCode = documentCode;
+    public void setDetailItemCode(String detailItemCode) {
+        this.detailItemCode = detailItemCode;
+    }
+
+    public String getSecurityCertificationMasterCode() {
+        return securityCertificationMasterCode;
+    }
+
+    public void setSecurityCertificationMasterCode(String securityCertificationMasterCode) {
+        this.securityCertificationMasterCode = securityCertificationMasterCode;
     }
 
     public String getClassificationCode() {
@@ -47,28 +56,20 @@ public class SecurityCertificationMaster {
         this.itemCode = itemCode;
     }
 
-    public String getCertificationTypeName() {
-        return certificationTypeName;
+    public String getDetailItemTypeName() {
+        return detailItemTypeName;
     }
 
-    public void setCertificationTypeName(String certificationTypeName) {
-        this.certificationTypeName = certificationTypeName;
+    public void setDetailItemTypeName(String detailItemTypeName) {
+        this.detailItemTypeName = detailItemTypeName;
     }
 
-    public String getIsoDetails() {
-        return isoDetails;
+    public boolean isCompleted() {
+        return completed;
     }
 
-    public void setIsoDetails(String isoDetails) {
-        this.isoDetails = isoDetails;
-    }
-
-    public String getPciDssDetails() {
-        return pciDssDetails;
-    }
-
-    public void setPciDssDetails(String pciDssDetails) {
-        this.pciDssDetails = pciDssDetails;
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -85,6 +86,14 @@ public class SecurityCertificationMaster {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public int getMonthlyIndex() {
+        return monthlyIndex;
+    }
+
+    public void setMonthlyIndex(int monthlyIndex) {
+        this.monthlyIndex = monthlyIndex;
     }
 }
 

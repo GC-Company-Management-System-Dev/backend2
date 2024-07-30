@@ -1,6 +1,6 @@
 package com.yeogi.scms.repository;
 
-import com.yeogi.scms.domain.SecurityCertificationMaster;
+import com.yeogi.scms.domain.SCMaster;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -10,17 +10,17 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class SecurityCertificationMasterRepository {
+public class SCMasterRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    public SecurityCertificationMasterRepository(JdbcTemplate jdbcTemplate) {
+    public SCMasterRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private static final class SecurityCertificationMasterRowMapper implements RowMapper<SecurityCertificationMaster> {
+    private static final class SCMasterRowMapper implements RowMapper<SCMaster> {
         @Override
-        public SecurityCertificationMaster mapRow(ResultSet rs, int rowNum) throws SQLException {
-            SecurityCertificationMaster master = new SecurityCertificationMaster();
+        public SCMaster mapRow(ResultSet rs, int rowNum) throws SQLException {
+            SCMaster master = new SCMaster();
             master.setDocumentCode(rs.getString("Document_Code"));
             master.setClassificationCode(rs.getString("Classification_Code"));
             master.setCertificationYear(rs.getInt("Certification_Year"));
@@ -34,8 +34,8 @@ public class SecurityCertificationMasterRepository {
         }
     }
 
-    public List<SecurityCertificationMaster> findAll() {
-        String sql = "SELECT * FROM Security_Certification_Master";
-        return jdbcTemplate.query(sql, new SecurityCertificationMasterRowMapper());
+    public List<SCMaster> findByDocumentCode(String prefix) {
+        String sql = "SELECT * FROM Security_Certification_Master WHERE Classification_Code LIKE ?";
+        return jdbcTemplate.query(sql, new Object[]{prefix + '%'}, new SCMasterRowMapper());
     }
 }
