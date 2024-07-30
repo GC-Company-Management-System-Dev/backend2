@@ -1,6 +1,6 @@
 package com.yeogi.scms.domain;
 
-public class LoginAccountManagement {
+public class LoginAccount {
     private String loginId;
     private String username;
     private String password;
