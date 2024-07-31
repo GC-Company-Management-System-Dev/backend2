@@ -14,7 +14,7 @@
       display: flex;
       margin-top: 0px;
       height: 25px;
-      margin-left: 60%;
+      /*margin-left: 60%;*/
     }
 
     #datepicker {
@@ -84,6 +84,99 @@
     .progress-count {
       color: blue; /* 수행한 항목 글자색을 파란색으로 설정 */
     }
+
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto; /* 15% from the top and centered */
+      padding: 20px;
+      border: 1px solid #888;
+      width: 40%; /* Could be more or less, depending on screen size */
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      margin-bottom: 200px;
+      box-sizing: border-box;
+    }
+
+    .modal-button {
+      background-color: red;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .proceed-button,
+    .cancel-button {
+      background-color: red;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      width: calc(50% - 25px); /* 버튼 사이에 50px 여백 설정 */
+    }
+
+    .proceed-button {
+      margin-right: 10px;
+    }
+
+    .warning-text {
+      color: red;
+      text-decoration: underline;
+    }
+
+    .modal-checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-top: 80px;
+      margin-bottom: 80px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
   </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
@@ -117,10 +210,35 @@
     });
 
     $(function () {
-      $(".search-button").click(function () {
+      $("#search-button").click(function () {
         $("#datepicker").datepicker("show");
       });
     });
+
+    $(document).ready(function() {
+      $("#reset-year-button").click(function() {
+        $("#firstModal").css("display", "block");
+      });
+
+      $(".close").click(function() {
+        $(".modal").css("display", "none");
+      });
+
+      $("#firstModal .modal-button").click(function() {
+        $("#firstModal").css("display", "none");
+        $("#secondModal").css("display", "block");
+      });
+
+      $("#secondModal .proceed-button").click(function() {
+        alert("초기화 되었습니다.");
+        $(".modal").css("display", "none");
+      });
+
+      $("#secondModal .cancel-button").click(function() {
+        $(".modal").css("display", "none");
+      });
+    });
+
   </script>
 </head>
 <body>
@@ -133,9 +251,10 @@
       <h1 style="color: red; font-size: 24px; justify-content: center; align-items: center;">Dash Board</h1>
     </div>
     <div id="datepicker-container">
+      <button id="reset-year-button" class="search-button" type="button" style="justify-content: flex-start; text-align: left; margin-right: 850px">인증년도 초기화</button>
       <i class="fas fa-calendar-alt" style="margin-right: 5px; width: 23px; height: 23px;"></i>
       <input type="text" id="datepicker">
-      <button class="search-button" type="button">검색</button>
+      <button id="search-button" class="search-button" type="button">검색</button>
     </div>
 
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 100%;">
@@ -174,6 +293,33 @@
       <!-- 선 그래프 -->
       <div class="line-chart-container chart-container" style="flex-basis: 100%; margin-top: 50px;">
         <canvas id="myLineChart"></canvas>
+      </div>
+
+      <!-- 첫 번째 모달 -->
+      <div id="firstModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <div class="modal-title">본인 확인</div>
+          <div class="input-title">로그인 비밀번호</div>
+          <input type="password" class="modal-input" placeholder="로그인 비밀번호 입력">
+          <button class="modal-button">진행하기</button>
+        </div>
+      </div>
+
+      <!-- 두 번째 모달 -->
+      <div id="secondModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <div class="modal-title">다음 단계 진행 시 지금까지 작성하신 <span class="warning-text">인증 현황 및 증적이 초기화</span>되며, <br> 기준년도가 <span class="warning-text">다음 인증년도로 변경</span>되게 됩니다.<br> 그래도 초기화 하시겠습니까?</div>
+          <div class="modal-checkbox-label" style="text-align: center; justify-content: center;">
+            <input type="checkbox" id="confirm-reset" style="margin-right: 10px;">
+            <label for="confirm-reset">네. 초기화 하겠습니다.</label>
+          </div>
+          <div class="modal-footer">
+            <button class="proceed-button">진행하기</button>
+            <button class="cancel-button">취소하기</button>
+          </div>
+        </div>
       </div>
 
 
