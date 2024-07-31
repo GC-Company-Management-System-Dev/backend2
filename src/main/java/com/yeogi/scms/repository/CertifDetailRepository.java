@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class CertifDetailRepository {
@@ -29,18 +28,13 @@ public class CertifDetailRepository {
         });
     }
 
-    public Optional<CertifDetail> findByDetailCode(String detailItemCode) {
+    public List<CertifDetail> findByDetailCode(String detailItemCode) {
         String sql = "SELECT * FROM Certification_Detail_Item WHERE Detail_Item_Code = ?";
-        List<CertifDetail> details = jdbcTemplate.query(sql, new Object[]{detailItemCode}, new RowMapper<CertifDetail>() {
+        return jdbcTemplate.query(sql, new Object[]{detailItemCode}, new RowMapper<CertifDetail>() {
             @Override
             public CertifDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return RowMapperUtil.mapCertifDetail(rs);
             }
         });
-        if (details.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(details.get(0));
-        }
     }
 }
