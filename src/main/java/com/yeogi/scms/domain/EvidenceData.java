@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class EvidenceData {
     private UUID fileKey;
-    private String detailItemCode; // 외래 키 필드를 직접 사용
+    private String detailItemCode;
     private String fileName;
     private double fileSize;
     private String filePath;

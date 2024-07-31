@@ -21,7 +21,7 @@ public class CertifDetailService {
         return certifDetailRepository.findByDocuCode(documentCode);
     }
 
-    public CertifDetail getCertifDetailByDCode(String detailItemCode) {
-        return certifDetailRepository.findByDetailCode(detailItemCode).orElse(null);
+    public List<CertifDetail> getCertifDetailByDCode(String detailItemCode) {
+        return certifDetailRepository.findByDetailCode(detailItemCode);
     }
 }
