@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,17 @@ public class MainController {
     @GetMapping("/log-manage")
     public String showLogManagement() {
         return "logManage";
+    }
+
+    @GetMapping("/login")
+    public String showLogin(){
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String handleLogin() {
+        // 로그인 처리 로직을 여기에 추가할 수 있습니다.
+        return "redirect:/";  // 로그인 성공 시 메인 페이지로 리디렉션
     }
 
 
