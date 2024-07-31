@@ -230,3 +230,195 @@ a {
   text-align:center;
   vertical-align: middle;
 }
+
+/* detail-template-style */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px; /* 각 셀 사이의 간격 */
+  width: 100%; /* 부모 요소에 대한 높이를 100%로 설정하여 전체 화면을 채우도록 함 */
+  height: 100%; /* 부모 요소에 대한 높이를 100%로 설정하여 전체 화면을 채우도록 함 */
+}
+
+.grid-container .section {
+  border: 1px solid black;
+  padding: 20px;
+  display: flex;
+  flex-direction: column; /* 섹션을 수직으로 정렬하기 위해 column으로 설정 */
+}
+
+.overflow-scroll {
+  overflow-y: auto; /* 수직 스크롤을 활성화합니다. */
+}
+
+h2 {
+  font-size: 16px; /* 원하는 크기로 조정합니다. */
+  font-weight: bold; /* 텍스트를 볼드로 처리합니다. */
+}
+
+/* 체크박스 스타일링 */
+input[type="checkbox"] {
+  transform: scale(1.5); /* 체크박스 크기 키우기 */
+  margin-right: 10px; /* 체크박스와 라벨 사이의 간격 조절 */
+}
+
+/* 수정 모달 레이어 스타일 */
+.modal {
+  display: none; /* 기본적으로 모달은 숨김 */
+  position: fixed; /* 화면에 고정 */
+  z-index: 1; /* 다른 요소들보다 위에 위치 */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* 스크롤바 허용 */
+  background-color: rgba(0, 0, 0, 0.4); /* 배경 색상과 투명도 설정 */
+}
+
+.modal-content {
+  background-color: #fefefe; /* 모달 내부 콘텐츠 배경색 */
+  margin: 10% auto; /* 모달을 수직 가운데로 정렬 */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%; /* 모달 너비 */
+  height: 80%; /* 세로 길이를 두 배로 늘립니다. */
+}
+
+.close {
+  color: #aaa;
+  margin-left: auto;
+  margin-top: -20px; /* X 버튼을 위로 조금 이동시킵니다. */
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-table {
+  width: 100%;
+  height: 100%;
+}
+
+.modal-table .td {
+  padding: 10px;
+}
+
+.modal-button {
+  display: block; /* 블록 레벨 요소로 변경하여 중앙 정렬 */
+  margin: 20px auto 0; /* 버튼을 상단 여백을 둔 채 가운데로 정렬합니다. */
+  padding: 10px 20px;
+  background-color: #ff3333; /* 버튼 배경색 */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+/*파일 업로드*/
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.contents {
+  display: flex;
+  flex-direction: column;
+}
+.contents .upload-box {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.contents .upload-box .drag-file {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 3px dashed #dbdbdb;
+}
+.contents .upload-box .drag-file.highlight {
+  border: 3px dashed red;
+}
+.contents .upload-box .drag-file .image {
+  margin-top: 10px;
+  width: 40px;
+}
+.contents .upload-box .drag-file .message {
+  /* margin-bottom: 0; */
+}
+.contents .upload-box .file-label {
+  margin-top: 10px;
+  margin-left: auto;
+  background-color: #4f4f4f;
+  color: #fff;
+  text-align: center;
+  padding: 10px 0;
+  width: 20%;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.contents .upload-box .file {
+  display: none;
+}
+
+.contents .files {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  height: 30%;
+}
+.contents .files .file {
+  display: flex;
+  padding: 10px 10px;
+  border-bottom: 1px solid #dbdbdb;
+}
+.contents .files .file:last-child {
+  margin-bottom: 0px;
+  border-bottom: none;
+}
+
+.contents .files .file .thumbnail {
+  display: flex;
+  flex: none;
+  width: 100px;
+  align-items: center;
+}
+
+.contents .files .file .details {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.contents .files .file .details .header {
+  display: flex;
+}
+.contents .files .file .details .header .name {
+  width: 70%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.contents .files .file .details .header .size {
+  margin-left: auto;
+  margin-right: 30px;
+}

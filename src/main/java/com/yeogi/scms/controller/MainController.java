@@ -1,9 +1,7 @@
 package com.yeogi.scms.controller;
 
-import com.yeogi.scms.domain.CertifDetail;
-import com.yeogi.scms.domain.SCMaster;
-import com.yeogi.scms.service.CertifDetailService;
-import com.yeogi.scms.service.SCMasterService;
+import com.yeogi.scms.domain.*;
+import com.yeogi.scms.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,13 +16,24 @@ import java.util.stream.Collectors;
 @Controller
 public class MainController {
 
+    private final CertifContentService certifContentService;
+    private final DefectManageService defectManageService;
+    private final OperationalStatusService operationalStatusService;
     private final SCMasterService scmMasterService;
     private final CertifDetailService certifDetailService;
+    //private final EvidenceDataService evidenceDataService;
 
     @Autowired
-    public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService) {
+    public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
+                          DefectManageService defectManageService,
+                          OperationalStatusService operationalStatusService, EvidenceDataService evidenceDataService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
+        this.certifContentService = certifContentService;
+        this.defectManageService = defectManageService;
+        this.operationalStatusService = operationalStatusService;
+        //this.evidenceDataService = evidenceDataService;
+
     }
 
     @GetMapping("/")
@@ -85,8 +94,25 @@ public class MainController {
 
     @GetMapping("/{detailItemCode}")
     public String showDetail(@PathVariable String detailItemCode, Model model) {
-        CertifDetail detail = certifDetailService.getCertifDetailByDCode(detailItemCode);
-        model.addAttribute("detail", detail);
+        List<CertifDetail> details = certifDetailService.getCertifDetailByDCode(detailItemCode);
+        List<CertifContent> certifContents = certifContentService.getCertifContentByDCode(detailItemCode);
+        List<DefectManage> defectManages = defectManageService.getDefectManageByDCode(detailItemCode);
+        List<OperationalStatus> operationalStatuses = operationalStatusService.getOperationalStatusByDCode(detailItemCode);
+        //List<EvidenceData> evidenceDataList = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+
+        // detailItemCode와 일치하는 행을 찾음
+        String detailItemTypeName = details.stream()
+                .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
+                .map(CertifDetail::getDetailItemTypeName)
+                .findFirst()
+                .orElse("");
+
+        model.addAttribute("detailItemTypeName", detailItemTypeName);
+        model.addAttribute("certifContents", certifContents);
+        model.addAttribute("defectManages", defectManages);
+        model.addAttribute("operationalStatuses", operationalStatuses);
+        //model.addAttribute("evidenceDataList", evidenceDataList);
+
         return "detail-template";
     }
 
