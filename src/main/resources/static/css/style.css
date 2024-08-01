@@ -422,3 +422,188 @@ input[type="checkbox"] {
   margin-left: auto;
   margin-right: 30px;
 }
+
+
+/* main.html 스타일 */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+#datepicker-container {
+  display: flex;
+  margin-top: 0px;
+  height: 25px;
+  /*margin-left: 60%;*/
+}
+
+#datepicker {
+  margin-right: 10px; /* Datepicker 오른쪽 여백 설정 */
+  height: 25px;
+}
+
+.search-button { /*우측 상단 날짜 검색 버튼*/
+  height: 25px;
+  border: 1px solid red;
+  background-color: transparent;
+  color: red;
+  padding: 0 12px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 5px; /* 모서리를 10픽셀만큼 둥글게 설정 */
+}
+
+.chart-container {
+  width: 350px; /* 원하는 가로 크기 */
+  height: 350px; /* 세로 크기 */
+  align-items: center;
+  justify-content: center; /* 가로로 가운데 정렬 */
+  padding: 0 40px;
+  margin-top: 20px; /* 추가된 차트와 "Dash Board" 사이의 간격 조정 */
+  text-align: center; /* 그래프 아래에 텍스트 중앙 정렬 */
+}
+
+.progress-info {
+  width: 200px;
+  height: 40px;
+  align-items: center;
+  justify-content: center; /* 가로로 가운데 정렬 */
+  display: flex;
+  margin: 0 auto; /* 가운데 정렬을 위한 margin 설정 */
+  margin-bottom: 5px;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 5px;
+  border-radius: 5px;
+}
+
+
+.progress-title {
+  font-size: 14px;
+  color: white; /* 글자색 설정 */
+  background-color: red; /* 배경색 설정 */
+  padding: 5px; /* 내부 여백 설정 */
+  border-radius: 5px; /* 모서리 둥글게 설정 */
+  margin-right: 20px; /* 오른쪽 여백 설정 */
+}
+
+.progress-label, .progress-count {
+  font-size: 14px; /* 글자 크기 설정 */
+  margin-right: 20px; /* 아이템 간 간격 조정 */
+}
+
+.line-chart-container {
+  text-align: center; /* 가로 방향 가운데 정렬 */
+  display: flex; /* 세로 중앙 정렬을 위해 flex 설정 추가 */
+  align-items: center; /* 세로 중앙 정렬 */
+}
+
+.progress-label {
+  color: red; /* 진행도 글자색을 빨간색으로 설정 */
+}
+
+.progress-count {
+  color: blue; /* 수행한 항목 글자색을 파란색으로 설정 */
+}
+
+.modal-main {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content-main {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 45%; /* Could be more or less, depending on screen size */
+  height: 55%;
+  box-sizing: border-box;
+}
+
+.close-main {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-main:hover,
+.close-main:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-title-main {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  margin-bottom: 200px;
+  box-sizing: border-box;
+}
+
+.modal-button-main {
+  background-color: red;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.proceed-button,
+.cancel-button {
+  background-color: red;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  width: calc(50% - 25px); /* 버튼 사이에 50px 여백 설정 */
+  box-sizing: border-box;
+}
+
+.proceed-button {
+  margin-right: 10px;
+}
+
+.warning-text {
+  color: red;
+  text-decoration: underline;
+}
+
+.modal-checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-top: 80px;
+  margin-bottom: 80px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+/*login.html*/
+
