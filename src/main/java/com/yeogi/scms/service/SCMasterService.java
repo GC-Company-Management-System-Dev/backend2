@@ -40,5 +40,16 @@ public class SCMasterService {
         return List.of();
     }
 
+    public boolean saveDetailsToDB(String documentCode, String isoDetails, String pciDssDetails) {
+        try {
+            repository.updateDetails(documentCode, isoDetails, pciDssDetails);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 
 }
