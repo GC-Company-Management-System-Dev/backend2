@@ -3,12 +3,13 @@ package com.yeogi.scms.controller;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,7 +101,7 @@ public class MainController {
         List<OperationalStatus> operationalStatuses = operationalStatusService.getOperationalStatusByDCode(detailItemCode);
         //List<EvidenceData> evidenceDataList = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
 
-        // detailItemCode와 일치하는 행을 찾음
+        // detailItemCode와 일치하는 행을 찾아 detailItemTypeName 저장
         String detailItemTypeName = details.stream()
                 .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
                 .map(CertifDetail::getDetailItemTypeName)
@@ -130,6 +131,21 @@ public class MainController {
     public String handleLogin() {
         // 로그인 처리 로직을 여기에 추가할 수 있습니다.
         return "redirect:/";  // 로그인 성공 시 메인 페이지로 리디렉션
+    }
+
+    @PostMapping("/save-details")
+    public ResponseEntity<?> saveDetails(@RequestBody Map<String, String> details) {
+        String documentCode = details.get("documentCode");
+        String isoDetails = details.get("isoDetails");
+        String pciDssDetails = details.get("pciDssDetails");
+
+        boolean success = scmMasterService.saveDetailsToDB(documentCode, isoDetails, pciDssDetails);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error saving details"));
+        }
     }
 
 
