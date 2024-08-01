@@ -27,4 +27,12 @@ public class SCMasterRepository {
             }
         });
     }
+
+    public void updateDetails(String documentCode, String isoDetails, String pciDssDetails) {
+        String sql = "UPDATE Security_Certification_Master SET ISO_Details = ?, PCI_DSS_Details = ? WHERE Document_Code = ?";
+        jdbcTemplate.update(sql, isoDetails, pciDssDetails, documentCode);
+    }
+
+
+
 }
