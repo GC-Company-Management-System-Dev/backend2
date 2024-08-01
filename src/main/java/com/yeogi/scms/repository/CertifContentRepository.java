@@ -27,4 +27,9 @@ public class CertifContentRepository {
             }
         });
     }
+
+    public void update(CertifContent certifContent) {
+        String sql = "UPDATE Certification_Item_Content SET Certification_Criteria = ?, Key_Checkpoints = ?, Relevant_Laws = ?, Updated_At = NOW(), Modifier = ? WHERE Detail_Item_Code = ?";
+        jdbcTemplate.update(sql, certifContent.getCertificationCriteria(), certifContent.getKeyCheckpoints(), certifContent.getRelevantLaws(), certifContent.getModifier(), certifContent.getDetailItemCode());
+    }
 }
