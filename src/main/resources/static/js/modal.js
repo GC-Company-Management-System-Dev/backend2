@@ -1,4 +1,4 @@
-// static/js/script.js
+// static/js/modal.js
 
 // 모달 열기 함수
 function openModal(modalId, buttonId) {
@@ -6,12 +6,14 @@ function openModal(modalId, buttonId) {
     var button = document.getElementById(buttonId);
 
     if (modalId === 'editModal-certification') {
+        var detailItemCode = button.getAttribute("data-detail-item-code") || "";
         var certificationStandard = button.getAttribute("data-certification-standard") || "";
         var majorPoints = button.getAttribute("data-major-points") || "";
         var relatedLaws = button.getAttribute("data-related-laws") || "";
         var modificationDate = button.getAttribute("data-modification-date") || "N/A";
         var modifier = button.getAttribute("data-modifier") || "N/A";
 
+        document.getElementById("detailItemCode").value = detailItemCode;
         document.getElementById("certificationStandard").value = certificationStandard;
         document.getElementById("majorPoints").value = majorPoints;
         document.getElementById("relatedLaws").value = relatedLaws;

@@ -20,4 +20,8 @@ public class CertifContentService {
     public List<CertifContent> getCertifContentByDCode(String detailItemCode) {
         return certifContentRepository.findByDetailCode(detailItemCode);
     }
+
+    public void updateCertifContent(CertifContent certifContent) {
+        certifContentRepository.update(certifContent);
+    }
 }
