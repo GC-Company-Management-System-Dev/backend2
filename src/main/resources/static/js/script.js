@@ -1,4 +1,4 @@
-// static/js/modal.js
+// static/js/script.js
 
 // 모달 열기 함수
 function openModal(modalId, buttonId) {
@@ -173,3 +173,88 @@ function saveChangesDefects() {
 
     closeModal('editModal-defects');
 }
+
+//main
+$(function() {
+    $(".search-button").hover(
+        function() {
+            // 마우스 오버 시
+            $(this).css({
+                "border-color": "white",
+                "color": "white",
+                "background-color": "red"
+            });
+        },
+        function() {
+            // 마우스 아웃 시
+            $(this).css({
+                "border-color": "red",
+                "color": "red",
+                "background-color": "transparent"
+            });
+        }
+    );
+});
+
+
+$(function () {
+    $("#datepicker").datepicker({
+        changeMonth: false, // 월 선택 비활성화
+        changeDay: false, // 일 선택 비활성화
+        changeYear: true, // 연도 선택 활성화
+        showButtonPanel: true, // 버튼 패널 표시
+        dateFormat: 'yy', // 연도 형식 설정
+        yearRange: "c-10:c+10", // 연도 범위 설정 (현재 연도 기준 -10년에서 +10년)
+        onClose: function(dateText, inst) {
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).val(year);
+        },
+        beforeShow: function(input, inst) {
+            if ((datestr = $(this).val()).length > 0) {
+                year = datestr.substring(datestr.length - 4, datestr.length);
+                $(this).datepicker('option', 'defaultDate', new Date(year, 1, 1));
+                $(this).datepicker('setDate', new Date(year, 1, 1));
+            }
+            $(this).datepicker('widget').addClass('hide-calendar');
+            $(".ui-datepicker-calendar").hide();
+            $(".ui-datepicker-month").hide();
+        }
+    });
+
+    // Add custom style to hide calendar and month selector
+    $("<style>")
+        .prop("type", "text/css")
+        .html("\
+        .hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
+        .appendTo("head");
+});
+
+$(function () {
+    $("#search-button").click(function () {
+        $("#datepicker").datepicker("show");
+    });
+});
+
+$(document).ready(function() {
+    $("#reset-year-button").click(function() {
+        $("#firstModal").css("display", "block");
+    });
+
+    $(".close-main").click(function() {
+        $(".modal-main").css("display", "none");
+    });
+
+    $("#firstModal .modal-button-main").click(function() {
+        $("#firstModal").css("display", "none");
+        $("#secondModal").css("display", "block");
+    });
+
+    $("#secondModal .proceed-button").click(function() {
+        alert("초기화 되었습니다.");
+        $(".modal-main").css("display", "none");
+    });
+
+    $("#secondModal .cancel-button").click(function() {
+        $(".modal-main").css("display", "none");
+    });
+});
