@@ -1,4 +1,4 @@
-// static/js/script.js
+// static/js/modal.js
 
 // 모달 열기 함수
 function openModal(modalId, buttonId) {
