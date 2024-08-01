@@ -103,7 +103,9 @@
       margin: 15% auto; /* 15% from the top and centered */
       padding: 20px;
       border: 1px solid #888;
-      width: 40%; /* Could be more or less, depending on screen size */
+      width: 45%; /* Could be more or less, depending on screen size */
+      height: 55%;
+      box-sizing: border-box;
     }
 
     .close {
@@ -142,6 +144,8 @@
       border: none;
       cursor: pointer;
       margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .proceed-button,
@@ -153,6 +157,7 @@
       cursor: pointer;
       margin-top: 10px;
       width: calc(50% - 25px); /* 버튼 사이에 50px 여백 설정 */
+      box-sizing: border-box;
     }
 
     .proceed-button {
@@ -175,6 +180,7 @@
       display: flex;
       justify-content: space-between;
       margin-top: 20px;
+      margin-bottom: 0;
     }
 
   </style>
@@ -206,7 +212,35 @@
 
 
     $(function () {
-      $("#datepicker").datepicker();
+      $("#datepicker").datepicker({
+        changeMonth: false, // 월 선택 비활성화
+        changeDay: false, // 일 선택 비활성화
+        changeYear: true, // 연도 선택 활성화
+        showButtonPanel: true, // 버튼 패널 표시
+        dateFormat: 'yy', // 연도 형식 설정
+        yearRange: "c-10:c+10", // 연도 범위 설정 (현재 연도 기준 -10년에서 +10년)
+        onClose: function(dateText, inst) {
+          var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+          $(this).val(year);
+        },
+        beforeShow: function(input, inst) {
+          if ((datestr = $(this).val()).length > 0) {
+            year = datestr.substring(datestr.length - 4, datestr.length);
+            $(this).datepicker('option', 'defaultDate', new Date(year, 1, 1));
+            $(this).datepicker('setDate', new Date(year, 1, 1));
+          }
+          $(this).datepicker('widget').addClass('hide-calendar');
+          $(".ui-datepicker-calendar").hide();
+          $(".ui-datepicker-month").hide();
+        }
+      });
+
+      // Add custom style to hide calendar and month selector
+      $("<style>")
+              .prop("type", "text/css")
+              .html("\
+        .hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
+              .appendTo("head");
     });
 
     $(function () {
@@ -251,7 +285,7 @@
       <h1 style="color: red; font-size: 24px; justify-content: center; align-items: center;">Dash Board</h1>
     </div>
     <div id="datepicker-container">
-      <button id="reset-year-button" class="search-button" type="button" style="justify-content: flex-start; text-align: left; margin-right: 850px">인증년도 초기화</button>
+      <button id="reset-year-button" class="search-button" type="button" style="justify-content: flex-start; text-align: left; margin-right: 700px">인증년도 초기화</button>
       <i class="fas fa-calendar-alt" style="margin-right: 5px; width: 23px; height: 23px;"></i>
       <input type="text" id="datepicker">
       <button id="search-button" class="search-button" type="button">검색</button>
