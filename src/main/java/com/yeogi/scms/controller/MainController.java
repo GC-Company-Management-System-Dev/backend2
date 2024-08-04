@@ -148,5 +148,21 @@ public class MainController {
         }
     }
 
+    @PostMapping("/save-certifContent")
+    public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
+        String detailItemCode = certifContent.get("detailItemCode");
+        String certificationCriteria = certifContent.get("certificationCriteria");
+        String keyCheckpoints = certifContent.get("keyCheckpoints");
+        String relevantLaws = certifContent.get("relevantLaws");
+
+        boolean success = certifContentService.saveCertifContentToDB(detailItemCode, certificationCriteria, keyCheckpoints, relevantLaws);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error saving details"));
+        }
+    }
+
 
 }
