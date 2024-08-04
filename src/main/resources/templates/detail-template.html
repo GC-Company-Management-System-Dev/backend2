@@ -87,7 +87,17 @@
                                 <td colspan="2"><textarea id="relatedLaws" name="relatedLaws" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                         </table>
-                        <button type="button" id="modal-button-certification" onclick="saveChangesCertification()" class="modal-button">등록하기</button>
+                        <button type="button" id="modal-button-certification" class="modal-button"
+                                th:each="certifContent : ${certifContents}"
+                                th:attr="data-detail-item-code=${certifContent.detailItemCode},
+                                     data-certification-standard=${certifContent.certificationCriteria},
+                                     data-major-points=${certifContent.keyCheckpoints},
+                                     data-related-laws=${certifContent.relevantLaws},
+                                     data-modification-date=${certifContent.updatedAt},
+                                     data-modifier=${certifContent.modifier},
+                                     id='saveButton-' + ${certifContent.sequence}"
+                                onclick="closeModal('editModal-certification')">등록하기</button>
+<!--                        <button type="button" id="modal-button-certification" onclick="saveChangesCertification()" class="modal-button">등록하기</button>-->
                     </form>
                 </div>
             </div>

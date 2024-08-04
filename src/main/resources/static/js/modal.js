@@ -6,14 +6,12 @@ function openModal(modalId, buttonId) {
     var button = document.getElementById(buttonId);
 
     if (modalId === 'editModal-certification') {
-        var detailItemCode = button.getAttribute("data-detail-item-code") || "";
         var certificationStandard = button.getAttribute("data-certification-standard") || "";
         var majorPoints = button.getAttribute("data-major-points") || "";
         var relatedLaws = button.getAttribute("data-related-laws") || "";
         var modificationDate = button.getAttribute("data-modification-date") || "N/A";
         var modifier = button.getAttribute("data-modifier") || "N/A";
 
-        document.getElementById("detailItemCode").value = detailItemCode;
         document.getElementById("certificationStandard").value = certificationStandard;
         document.getElementById("majorPoints").value = majorPoints;
         document.getElementById("relatedLaws").value = relatedLaws;
@@ -73,6 +71,54 @@ function openModal(modalId, buttonId) {
     modal.style.display = "block";
 }
 
+document.addEventListener("DOMContentLoaded", function (){
+    var certifContentButton = document.querySelectorAll('.modal-button-certification');
+
+    certifContentButton.forEach(function (button){
+        button.addEventListener('click', function (){
+            var detailItemCode = button.getAttribute('data-detail-item-code');
+            var certificationStandard = button.getAttribute("data-certification-standard") || "";
+            var majorPoints = button.getAttribute("data-major-points") || "";
+            var relatedLaws = button.getAttribute("data-related-laws") || "";
+            var modificationDate = button.getAttribute("data-modification-date") || "N/A";
+            var modifier = button.getAttribute("data-modifier") || "N/A";
+
+            // var cerfifContentButton = document.querySelector('.modal-button[data-detail-item-code]');
+
+            fetch('/save-certifContent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    detailItemCode: detailItemCode,
+                    certificationStandard: certificationStandard,
+                    majorPoints: majorPoints,
+                    relatedLaws: relatedLaws
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success){
+                        var certificationStandardCell = document.getElementById("certificationStandard").value;
+                        var majorPointsCell = document.getElementById("majorPoints").value;
+                        var relatedLawsCell = document.getElementById("relatedLaws").value;
+
+                        certificationStandardCell.innerText = certificationStandard;
+                        majorPointsCell.innerText = majorPoints;
+                        relatedLawsCell.innerText = relatedLaws;
+
+                    } else {
+                        alert('Error saving certifcontent');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    });
+});
+
 function setModalData(row, modalId) {
     if (modalId === 'editModal-defects') {
         var ismsP = row.getAttribute("data-isms-p");
@@ -100,6 +146,7 @@ function closeModal(modalId) {
 // 수정 내용 처리 함수
 // 인증 항목 내용 수정 처리 함수
 function saveChangesCertification() {
+
     var certificationStandard = document.getElementById("certificationStandard").value;
     var majorPoints = document.getElementById("majorPoints").value;
     var relatedLaws = document.getElementById("relatedLaws").value;

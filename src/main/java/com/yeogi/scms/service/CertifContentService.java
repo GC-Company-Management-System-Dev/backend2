@@ -21,7 +21,13 @@ public class CertifContentService {
         return certifContentRepository.findByDetailCode(detailItemCode);
     }
 
-    public void updateCertifContent(CertifContent certifContent) {
-        certifContentRepository.update(certifContent);
+    public boolean saveCertifContentToDB(String detailItemCode, String certificationCriteria, String keyCheckpoints, String relevantLaws){
+        try {
+            certifContentRepository.updateCertifContent(detailItemCode, certificationCriteria, keyCheckpoints, relevantLaws);
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 }
