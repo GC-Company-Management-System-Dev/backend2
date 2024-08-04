@@ -1,19 +1,11 @@
 package com.yeogi.scms.domain;
 
 public class LoginAccount {
-    private String loginId;
     private String username;
+    private String nickname;
     private String password;
 
     // Getters and setters
-
-    public String getLoginId() {
-        return loginId;
-    }
-
-    public void setLoginId(String loginId) {
-        this.loginId = loginId;
-    }
 
     public String getUsername() {
         return username;
@@ -21,6 +13,14 @@ public class LoginAccount {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public String getPassword() {
