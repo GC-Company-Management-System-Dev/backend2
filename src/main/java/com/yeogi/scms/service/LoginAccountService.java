@@ -4,7 +4,6 @@ import com.yeogi.scms.domain.LoginAccount;
 import com.yeogi.scms.repository.LoginAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +17,6 @@ public class LoginAccountService implements UserDetailsService {
 
     private final LoginAccountRepository loginAccountRepository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Autowired
     public LoginAccountService(LoginAccountRepository loginAccountRepository, PasswordEncoder passwordEncoder) {
@@ -44,15 +42,12 @@ public class LoginAccountService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
 
-        return new User(loginAccount.getUsername(), loginAccount.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        return new CustomUserDetails(
+                loginAccount.getUsername(),
+                loginAccount.getPassword(),
+                loginAccount.getNickname(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
     }
 
-    public String getNicknameByUsername(String username) {
-        LoginAccount loginAccount = loginAccountRepository.findByUsername(username);
-        if (loginAccount != null) {
-            return loginAccount.getNickname();
-        }
-        return null;
-    }
 }
