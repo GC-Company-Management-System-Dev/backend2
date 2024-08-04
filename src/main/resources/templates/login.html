@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>여기어때 정보보호 인증 관리시스템</title>
     <meta charset="UTF-8">
@@ -110,6 +110,11 @@
             text-decoration: none;
         }
 
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 
 </head>
@@ -119,40 +124,47 @@
         <img src="images/login_logo.svg" alt="여기어때" style="height: 50px; vertical-align: middle;">
         정보보호 인증 관리시스템
     </h1>
-    <form action="/login" method="POST">
-        <div class="int-area">
-            <input type="text" name="id" id="id" autocomplete="off" required>
-            <label for="id">아이디</label>
+    <form th:action="@{/login}" method="post">
+        <div th:if="${param.error}" class="alert alert-danger">
+            <div class="error">
+                사용자 ID 또는 비밀번호를 확인해 주세요.
+            </div>
         </div>
         <div class="int-area">
-            <input type="password" name="pw" id="pw" autocomplete="off" required>
-            <label for="pw">패스워드</label>
+            <input type="text" name="username" id="username" autocomplete="off" required>
+            <label for="username">아이디</label>
+        </div>
+        <div class="int-area">
+            <input type="password" name="password" id="password" autocomplete="off" required>
+            <label for="password">패스워드</label>
         </div>
         <div class="btn-area">
             <button id="btn" type="submit">로그인하기</button>
-
         </div>
     </form>
 </section>
 
 <script>
-    let id = $('#id');
-    let pw = $('#pw');
-    let btn = $('#btn');
+    $(document).ready(function() {
+        const $username = $('#username');
+        const $password = $('#password');
+        const $btn = $('#btn');
 
-    $(btn).on('click', function() {
-        if($(id).val() == "") {
-            $(id).next('label').addClass('warning');
-            setTimeout(function() {
-                $('label').removeClass('warning');
-            }, 1500);
-        }
-        else if($(pw).val() == "") {
-            $(pw).next('label').addClass('warning');
-            setTimeout(function() {
-                $('label').removeClass('warning');
-            }, 1500);
-        }
+        $btn.on('click', function() {
+            if ($username.val() === "") {
+                $username.next('label').addClass('warning');
+                setTimeout(() => $('label').removeClass('warning'), 1500);
+                return false; // 폼 제출 방지
+            }
+            if ($password.val() === "") {
+                $password.next('label').addClass('warning');
+                setTimeout(() => $('label').removeClass('warning'), 1500);
+                return false; // 폼 제출 방지
+            }
+        });
+
+        // 에러 메시지를 5초 후에 숨기기
+        setTimeout(() => $('.alert-danger').fadeOut('slow'), 5000);
     });
 </script>
 </body>
