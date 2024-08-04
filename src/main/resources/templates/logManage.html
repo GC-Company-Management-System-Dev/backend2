@@ -3,6 +3,30 @@
 <head>
     <title>로그 관리</title>
     <th:block th:replace="fragments/head :: common-head"></th:block>
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .pagination a.active {
+            font-weight: bold;
+            color: red;
+        }
+
+        .pagination a.disabled {
+            color: lightgray;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
@@ -12,6 +36,7 @@
     <div class="content p-4 main-contents" style="overflow-y: scroll">
         <p class="table_name"> 접속로그</p>
         <table style="width:100%">
+            <thead>
             <tr>
                 <th class="col-1" scope="col" style="height: 50px;">NO</th>
                 <th class="col-1" scope="col" style="height: 50px;">접속자</th>
@@ -19,72 +44,27 @@
                 <th class="col-1" scope="col" style="height: 50px;">PATH</th>
                 <th class="col-1" scope="col" style="height: 50px;">접속시간</th>
             </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+            </thead>
+            <tbody>
+            <tr th:each="log, iterStat : ${logs}">
+                <td style="height: 50px;" th:text="${log.logSequence}"></td>
+                <td th:text="${log.accessId}"></td>
+                <td th:text="${log.action}"></td>
+                <td th:text="${log.accessPath}"></td>
+                <td th:text="${log.timestamp}"></td>
             </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td style="height: 50px;"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
+            </tbody>
         </table>
+        <div class="pagination">
+            <a th:classappend="${currentPage == 1} ? 'disabled'" th:href="@{/log-manage(page=${currentPage - 1}, size=${size})}">❮</a>
+            <span th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                  th:if="${(pageNum - 1) / 5 == (currentPage - 1) / 5}">
+                <a th:classappend="${pageNum == currentPage} ? 'active'" th:href="@{/log-manage(page=${pageNum}, size=${size})}"
+                   th:text="${pageNum}"></a>
+            </span>
+            <a th:classappend="${currentPage == totalPages} ? 'disabled'" th:href="@{/log-manage(page=${currentPage + 1}, size=${size})}">❯</a>
+        </div>
     </div>
 </main>
 </body>
-
 </html>
