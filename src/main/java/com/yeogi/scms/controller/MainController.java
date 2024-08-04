@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -22,29 +25,30 @@ public class MainController {
     private final OperationalStatusService operationalStatusService;
     private final SCMasterService scmMasterService;
     private final CertifDetailService certifDetailService;
-
     private final LoginAccountService loginAccountService;
+    private final AccessLogService accessLogService;
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
                           DefectManageService defectManageService, OperationalStatusService operationalStatusService,
-                          LoginAccountService loginAccountService) {
+                          LoginAccountService loginAccountService, AccessLogService accessLogService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
         this.certifContentService = certifContentService;
         this.defectManageService = defectManageService;
         this.operationalStatusService = operationalStatusService;
         this.loginAccountService = loginAccountService;
+        this.accessLogService = accessLogService;
 
     }
 
-    private void addNicknameToModel(Model model, User user) {
-        String nickname = (user != null) ? loginAccountService.getNicknameByUsername(user.getUsername()) : "Guest";
+    private void addNicknameToModel(Model model, CustomUserDetails user) {
+        String nickname = (user != null) ? user.getNickname() : "Guest";
         model.addAttribute("nickname", nickname);
     }
 
     @GetMapping("/")
-    public String main(Model model, @AuthenticationPrincipal User user) {
+    public String main(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
         return "main";
     }
@@ -58,7 +62,7 @@ public class MainController {
     }
 
     @GetMapping("/manage-system")
-    public String showManageSystem(Model model, @AuthenticationPrincipal User user) {
+    public String showManageSystem(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
         // (1) SCMasterService.getFilteredSCMaster("MANAGE") 호출
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("MANAGE");
@@ -78,7 +82,7 @@ public class MainController {
     }
 
     @GetMapping("/protect-measures")
-    public String showProtectMeasures(Model model, @AuthenticationPrincipal User user) {
+    public String showProtectMeasures(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
 
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PROTECT");
@@ -96,7 +100,7 @@ public class MainController {
     }
 
     @GetMapping("/privacy-require")
-    public String showPrivacyRequire(Model model, @AuthenticationPrincipal User user) {
+    public String showPrivacyRequire(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PRIVACY");
 
@@ -113,7 +117,7 @@ public class MainController {
     }
 
     @GetMapping("/{detailItemCode}")
-    public String showDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal User user) {
+    public String showDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
 
         List<CertifDetail> details = certifDetailService.getCertifDetailByDCode(detailItemCode);
@@ -139,10 +143,18 @@ public class MainController {
     }
 
     @GetMapping("/log-manage")
-    public String showLogManagement(Model model, @AuthenticationPrincipal User user) {
+    public String showLogs(Model model, @AuthenticationPrincipal CustomUserDetails user,
+                           @RequestParam(defaultValue = "1") int page,
+                           @RequestParam(defaultValue = "10") int size) {
         addNicknameToModel(model, user);
+        int totalLogs = accessLogService.getTotalLogCount();
+        List<AccessLog> logs = accessLogService.getAllLogs(page, size);
+        model.addAttribute("logs", logs);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", (int) Math.ceil((double) totalLogs / size));
         return "logManage";
     }
+
 
     @PostMapping("/save-details")
     public ResponseEntity<?> saveDetails(@RequestBody Map<String, String> details) {
@@ -158,6 +170,5 @@ public class MainController {
             return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error saving details"));
         }
     }
-
 
 }

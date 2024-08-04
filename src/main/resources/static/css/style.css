@@ -605,5 +605,12 @@ input[type="checkbox"] {
   margin-bottom: 0;
 }
 
-/*login.html*/
+.accordion-button[aria-expanded="false"]::after {
+  display: none;
+}
+
+.accordion-button.collapsed::after {
+  display: none;
+}
+
 

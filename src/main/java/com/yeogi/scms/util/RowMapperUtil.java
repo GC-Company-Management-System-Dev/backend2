@@ -90,5 +90,15 @@ public class RowMapperUtil {
         loginAccount.setPassword(rs.getString("Password"));
         return loginAccount;
         }
+
+        public static AccessLog mapAccessLog(ResultSet rs) throws SQLException {
+        AccessLog accessLog = new AccessLog();
+        accessLog.setLogSequence(rs.getLong("Log_Sequence"));
+        accessLog.setAccessId(rs.getString("Access_ID"));
+        accessLog.setAction(rs.getString("Action"));
+        accessLog.setAccessPath(rs.getString("Access_Path"));
+        accessLog.setTimestamp(rs.getTimestamp("Timestamp").toLocalDateTime());
+        return accessLog;
+    }
     }
 
