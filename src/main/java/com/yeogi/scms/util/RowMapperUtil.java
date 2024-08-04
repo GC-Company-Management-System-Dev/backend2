@@ -82,4 +82,13 @@ public class RowMapperUtil {
         evidenceData.setCreator(rs.getString("Creator"));
         return evidenceData;
     }
-}
+
+    public static LoginAccount mapLoginAccount(ResultSet rs) throws SQLException {
+        LoginAccount loginAccount = new LoginAccount();
+        loginAccount.setUsername(rs.getString("Username"));
+        loginAccount.setNickname(rs.getString("Nickname"));
+        loginAccount.setPassword(rs.getString("Password"));
+        return loginAccount;
+        }
+    }
+

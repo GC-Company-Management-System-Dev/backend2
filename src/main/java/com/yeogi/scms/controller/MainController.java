@@ -3,13 +3,13 @@ package com.yeogi.scms.controller;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,28 +22,44 @@ public class MainController {
     private final OperationalStatusService operationalStatusService;
     private final SCMasterService scmMasterService;
     private final CertifDetailService certifDetailService;
-    //private final EvidenceDataService evidenceDataService;
+
+    private final LoginAccountService loginAccountService;
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
-                          DefectManageService defectManageService,
-                          OperationalStatusService operationalStatusService, EvidenceDataService evidenceDataService) {
+                          DefectManageService defectManageService, OperationalStatusService operationalStatusService,
+                          LoginAccountService loginAccountService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
         this.certifContentService = certifContentService;
         this.defectManageService = defectManageService;
         this.operationalStatusService = operationalStatusService;
-        //this.evidenceDataService = evidenceDataService;
+        this.loginAccountService = loginAccountService;
 
+    }
+
+    private void addNicknameToModel(Model model, User user) {
+        String nickname = (user != null) ? loginAccountService.getNicknameByUsername(user.getUsername()) : "Guest";
+        model.addAttribute("nickname", nickname);
     }
 
     @GetMapping("/")
-    public String main() {
+    public String main(Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
         return "main";
     }
 
+    @GetMapping("/login")
+    public String loginForm(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Invalid id or password");
+        }
+        return "login";
+    }
+
     @GetMapping("/manage-system")
-    public String showManageSystem(Model model) {
+    public String showManageSystem(Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
         // (1) SCMasterService.getFilteredSCMaster("MANAGE") 호출
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("MANAGE");
 
@@ -62,7 +78,9 @@ public class MainController {
     }
 
     @GetMapping("/protect-measures")
-    public String showProtectMeasures(Model model) {
+    public String showProtectMeasures(Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
+
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PROTECT");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
@@ -78,7 +96,8 @@ public class MainController {
     }
 
     @GetMapping("/privacy-require")
-    public String showPrivacyRequire(Model model) {
+    public String showPrivacyRequire(Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
         List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PRIVACY");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
@@ -94,7 +113,9 @@ public class MainController {
     }
 
     @GetMapping("/{detailItemCode}")
-    public String showDetail(@PathVariable String detailItemCode, Model model) {
+    public String showDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
+
         List<CertifDetail> details = certifDetailService.getCertifDetailByDCode(detailItemCode);
         List<CertifContent> certifContents = certifContentService.getCertifContentByDCode(detailItemCode);
         List<DefectManage> defectManages = defectManageService.getDefectManageByDCode(detailItemCode);
@@ -118,19 +139,9 @@ public class MainController {
     }
 
     @GetMapping("/log-manage")
-    public String showLogManagement() {
+    public String showLogManagement(Model model, @AuthenticationPrincipal User user) {
+        addNicknameToModel(model, user);
         return "logManage";
-    }
-
-    @GetMapping("/login")
-    public String showLogin(){
-        return "login";
-    }
-
-    @PostMapping("/login")
-    public String handleLogin() {
-        // 로그인 처리 로직을 여기에 추가할 수 있습니다.
-        return "redirect:/";  // 로그인 성공 시 메인 페이지로 리디렉션
     }
 
     @PostMapping("/save-details")
