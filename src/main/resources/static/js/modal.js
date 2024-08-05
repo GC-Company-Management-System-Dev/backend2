@@ -71,53 +71,6 @@ function openModal(modalId, buttonId) {
     modal.style.display = "block";
 }
 
-document.addEventListener("DOMContentLoaded", function (){
-    var certifContentButton = document.querySelectorAll('.modal-button-certification');
-
-    certifContentButton.forEach(function (button){
-        button.addEventListener('click', function (){
-            var detailItemCode = button.getAttribute('data-detail-item-code');
-            var certificationStandard = button.getAttribute("data-certification-standard") || "";
-            var majorPoints = button.getAttribute("data-major-points") || "";
-            var relatedLaws = button.getAttribute("data-related-laws") || "";
-            var modificationDate = button.getAttribute("data-modification-date") || "N/A";
-            var modifier = button.getAttribute("data-modifier") || "N/A";
-
-            // var cerfifContentButton = document.querySelector('.modal-button[data-detail-item-code]');
-
-            fetch('/save-certifContent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    detailItemCode: detailItemCode,
-                    certificationStandard: certificationStandard,
-                    majorPoints: majorPoints,
-                    relatedLaws: relatedLaws
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success){
-                        var certificationStandardCell = document.getElementById("certificationStandard").value;
-                        var majorPointsCell = document.getElementById("majorPoints").value;
-                        var relatedLawsCell = document.getElementById("relatedLaws").value;
-
-                        certificationStandardCell.innerText = certificationStandard;
-                        majorPointsCell.innerText = majorPoints;
-                        relatedLawsCell.innerText = relatedLaws;
-
-                    } else {
-                        alert('Error saving certifcontent');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        });
-    });
-});
 
 function setModalData(row, modalId) {
     if (modalId === 'editModal-defects') {
@@ -145,42 +98,125 @@ function closeModal(modalId) {
 
 // 수정 내용 처리 함수
 // 인증 항목 내용 수정 처리 함수
-function saveChangesCertification() {
+function saveChangesCertification(button) {
 
-    var certificationStandard = document.getElementById("certificationStandard").value;
-    var majorPoints = document.getElementById("majorPoints").value;
-    var relatedLaws = document.getElementById("relatedLaws").value;
+    var detailItemCode = button.getAttribute("data-detail-item-code") || "";
 
-    console.log("인증기준:", certificationStandard);
-    console.log("주요 확인사항:", majorPoints);
-    console.log("관련 법규:", relatedLaws);
+    document.getElementById("detailItemCode").value = detailItemCode;
 
-    var currentDate = new Date();
-    var formattedDate = currentDate.toLocaleString();
+    var certificationStandard = document.getElementById("certificationStandard").value.trim();
+    var majorPoints = document.getElementById("majorPoints").value.trim();
+    var relatedLaws = document.getElementById("relatedLaws").value.trim();
+    var modifier1 = document.getElementById("modifier1").value;
 
-    document.getElementById("modificationDate1").value = formattedDate;
-    document.getElementById("modifier1").value = "사용자";
+    if (certificationStandard === "" && majorPoints === "" && relatedLaws === "") {
+        alert("빈 값으로 저장할 수 없습니다.");
+        return;
+    }
+
+    fetch('/update-certifContent', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            detailItemCode: detailItemCode,
+            certificationCriteria: certificationStandard,
+            keyCheckpoints: majorPoints,
+            relevantLaws: relatedLaws,
+            modifier: modifier1
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success){
+
+                // 데이터를 업데이트하는 로직 (예: 테이블의 셀 값 업데이트)
+                var rows = document.querySelectorAll('[data-detail-item-code="' + detailItemCode + '"]');
+                rows.forEach(function(row) {
+                    if (row.querySelector('[data-certification-standard]')) {
+                        row.querySelector('[data-certification-standard]').innerText = certificationStandard;
+                    }
+                    if (row.querySelector('[data-major-points]')) {
+                        row.querySelector('[data-major-points]').innerText = majorPoints;
+                    }
+                    if (row.querySelector('[data-related-laws]')) {
+                        row.querySelector('[data-related-laws]').innerText = relatedLaws;
+                    }
+                });
+
+            } else {
+                alert('Error updating certifcontent: ' + (body.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating certifcontent: ' + error.message);
+        });
 
     closeModal('editModal-certification');
+    location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
 }
 
 // 운영 현황 수정 처리 함수
-function saveChangesOperational() {
-    var currentSituation = document.getElementById("currentSituation").value;
-    var documentName = document.getElementById("documentName").value;
-    var evidenceName = document.getElementById("evidenceName").value;
+function saveChangesOperational(button) {
 
-    console.log("현황:", currentSituation);
-    console.log("문서명:", documentName);
-    console.log("증적명:", evidenceName);
+    var detailItemCode = button.getAttribute("data-detail-item-code") || "";
 
-    var currentDate = new Date();
-    var formattedDate = currentDate.toLocaleString();
+    document.getElementById("detailItemCode").value = detailItemCode;
 
-    document.getElementById("modificationDate2").value = formattedDate;
-    document.getElementById("modifier2").value = "사용자";
+    var currentSituation = document.getElementById("currentSituation").value.trim();
+    var documentName = document.getElementById("documentName").value.trim();
+    var evidenceName = document.getElementById("evidenceName").value.trim();
+    var modifier2 = document.getElementById("modifier2").value;
+
+    if (currentSituation === "" && documentName === "" && evidenceName === "") {
+        alert("빈 값으로 저장할 수 없습니다.");
+        return;
+    }
+
+    fetch('/update-operationalStatus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            detailItemCode: detailItemCode,
+            status: currentSituation,
+            relatedDocument: documentName,
+            evidenceName: evidenceName,
+            modifier: modifier2
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success){
+
+                // 데이터를 업데이트하는 로직 (예: 테이블의 셀 값 업데이트)
+                var rows = document.querySelectorAll('[data-detail-item-code="' + detailItemCode + '"]');
+                rows.forEach(function(row) {
+                    if (row.querySelector('[data-status]')) {
+                        row.querySelector('[data-status]').innerText = currentSituation;
+                    }
+                    if (row.querySelector('[data-related-document]')) {
+                        row.querySelector('[data-related-document]').innerText = documentName;
+                    }
+                    if (row.querySelector('[data-evidence-name]')) {
+                        row.querySelector('[data-evidence-name]').innerText = evidenceName;
+                    }
+                });
+
+            } else {
+                alert('Error updating operational status: ' + (body.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating operational status: ' + error.message);
+        });
 
     closeModal('editModal-operational');
+    location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
 }
 
 // 증적자료 업로드 처리 함수
@@ -207,21 +243,165 @@ function saveChangesProofUpload() {
 }
 
 // 결함 관리 수정 처리 함수
-function saveChangesDefects() {
-    var certificationType = document.getElementById("certificationType").value;
-    var defectContent = document.getElementById("defectContent").value;
+let defectData = {
+    "ISMS-P": "",
+    "ISO 27K": "",
+    "PCI-DSS": ""
+};
 
-    console.log("인증 구분:", certificationType);
-    console.log("결함 내용:", defectContent);
+// 셀렉트 박스 변경 시 데이터 유지
+document.getElementById('certificationType').addEventListener('change', function () {
+    const previousType = document.getElementById('certificationType').getAttribute('data-previous-type');
+    const currentType = this.value;
 
-    var currentDate = new Date();
-    var formattedDate = currentDate.toLocaleString();
+    // 현재 입력된 내용을 이전 타입에 저장
+    if (previousType) {
+        defectData[previousType] = document.getElementById('defectContent').value.trim();
+    }
 
-    document.getElementById("modificationDate4").value = formattedDate;
-    document.getElementById("modifier4").value = "사용자";
+    // 새로운 타입의 내용 불러오기
+    document.getElementById('defectContent').value = defectData[currentType];
+
+    // 현재 타입을 data-previous-type에 저장
+    document.getElementById('certificationType').setAttribute('data-previous-type', currentType);
+});
+
+// 최초 로드 시 기본 타입 설정
+document.getElementById('certificationType').setAttribute('data-previous-type', document.getElementById('certificationType').value);
+
+function saveChangesDefects(button) {
+    const detailItemCode = button.getAttribute("data-detail-item-code") || "";
+    const modifier4 = document.getElementById("modifier4").value;
+
+    // 현재 선택된 certificationType의 defectContent를 저장
+    const certificationType = document.getElementById('certificationType').value;
+    defectData[certificationType] = document.getElementById('defectContent').value.trim();
+
+    // 빈 값 확인
+    if (Object.values(defectData).every(content => content === "")) {
+        alert("빈 값으로 저장할 수 없습니다.");
+        return;
+    }
+
+    // 각 인증 구분별로 데이터 추출
+    const ismsP = defectData['ISMS-P'];
+    const iso27k = defectData['ISO 27K'];
+    const pciDss = defectData['PCI-DSS'];
+
+    // 서버로 데이터 전송
+    fetch('/update-defectManage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            detailItemCode: detailItemCode,
+            ismsP: ismsP,
+            iso27k: iso27k,
+            pciDss: pciDss,
+            modifier: modifier4
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 데이터를 업데이트하는 로직 (예: 테이블의 셀 값 업데이트)
+                const columns = document.querySelectorAll('[data-detail-item-code="' + detailItemCode + '"]');
+                columns.forEach(function (column) {
+                    if (column.getAttribute('data-isms-p') !== null) {
+                        column.setAttribute('data-isms-p', ismsP);
+                        column.innerText = ismsP;
+                    }
+                    if (column.getAttribute('data-iso-27k') !== null) {
+                        column.setAttribute('data-iso-27k', iso27k);
+                        column.innerText = iso27k;
+                    }
+                    if (column.getAttribute('data-pci-dss') !== null) {
+                        column.setAttribute('data-pci-dss', pciDss);
+                        column.innerText = pciDss;
+                    }
+                });
+
+            } else {
+                alert('Error updating defect manage: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating defect manage: ' + error.message);
+        });
 
     closeModal('editModal-defects');
+    location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
 }
+
+
+
+
+// // 결함 관리 수정 처리 함수
+// function saveChangesDefects(button) {
+//
+//     var detailItemCode = button.getAttribute("data-detail-item-code") || "";
+//     var modifier4 = document.getElementById("modifier4").value;
+//     var certificationType = document.getElementById('certificationType').value;
+//     var defectContent = document.getElementById('defectContent').value.trim();
+//
+//
+//     if (defectContent === "") {
+//         alert("빈 값으로 저장할 수 없습니다.");
+//         return;
+//     }
+//
+//     var ismsP = certificationType === 'ISMS-P' ? defectContent : "";
+//     var iso27k = certificationType === 'ISO 27K' ? defectContent : "";
+//     var pciDss = certificationType === 'PCI-DSS' ? defectContent : "";
+//
+//     fetch('/update-defectManage', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//             detailItemCode: detailItemCode,
+//             ismsP: ismsP,
+//             iso27k: iso27k,
+//             pciDss: pciDss,
+//             modifier: modifier4
+//         }),
+//     })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//
+//                 // 데이터를 업데이트하는 로직 (예: 테이블의 셀 값 업데이트)
+//                 var columns = document.querySelectorAll('[data-detail-item-code="' + detailItemCode + '"]');
+//                 columns.forEach(function(column) {
+//                     if (certificationType === 'ISMS-P' && column.getAttribute('data-isms-p') !== null) {
+//                         column.setAttribute('data-isms-p', ismsP);
+//                         column.innerText = ismsP;
+//                     }
+//                     if (certificationType === 'ISO 27K' && column.getAttribute('data-iso-27k') !== null) {
+//                         column.setAttribute('data-iso-27k', iso27k);
+//                         column.innerText = iso27k;
+//                     }
+//                     if (certificationType === 'PCI-DSS' && column.getAttribute('data-pci-dss') !== null) {
+//                         column.setAttribute('data-pci-dss', pciDss);
+//                         column.innerText = pciDss;
+//                     }
+//                 });
+//
+//             } else {
+//                 alert('Error updating defectmanage: ' + (data.message || 'Unknown error'));
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error:', error);
+//             alert('Error updating defectmanage: ' + error.message);
+//         });
+//
+//     closeModal('editModal-defects');
+//     location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
+// }
 
 //main
 $(function() {

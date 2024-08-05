@@ -27,4 +27,14 @@ public class DefectManageRepository {
             }
         });
     }
+
+    public void updateDefectManage(String detailItemCode, String ismsP, String iso27k, String pciDss, String modifier) {
+        String sql = "UPDATE Defect_Management SET ISMS_P = ?, ISO27K = ?, PCI_DSS = ?, Updated_At = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), Modifier = ? WHERE Detail_Item_Code = ?";
+
+        System.out.println("Executing SQL: " + sql);
+        System.out.println("With parameters: " + ismsP + ", " + iso27k + ", " + pciDss + ", " + modifier + ", " + detailItemCode);
+
+
+        jdbcTemplate.update(sql, ismsP, iso27k, pciDss, modifier, detailItemCode);
+    }
 }

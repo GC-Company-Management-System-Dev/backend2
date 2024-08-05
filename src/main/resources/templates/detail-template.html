@@ -13,6 +13,7 @@
 <main class="d-flex flex-nowrap">
     <div th:replace="fragments/sidebar :: sidebar"></div>
     <div class="content p-4 main-contents">
+        <input type="hidden" id="detailItemCode" name="detailItemCode">
         <p class="table_name" style="display: flex; align-items: center; margin-right: auto;" th:text="${detailItemTypeName}"> 세부 항목 이름</p>
         <div style="display: flex; align-items: center; margin-left: auto;">
             <input type="checkbox" id="status-completion" name="status-completion">
@@ -64,7 +65,8 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal('editModal-certification')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">인증항목 내용 수정</h2>
-                    <form id="editForm-certification" action="/update-certif-content" method="post" style="width: 100%; height: 100%">
+                    <form id="editForm-certification" action="/update-certifContent" method="post" style="width: 100%; height: 100%">
+                        <input type="hidden" id="currentUserNickname" value="${currentUser.nickname}">
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate1">일시</label></th>
@@ -87,17 +89,10 @@
                                 <td colspan="2"><textarea id="relatedLaws" name="relatedLaws" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                         </table>
-                        <button type="button" id="modal-button-certification" class="modal-button"
+
+                        <button type="button" id="modal-button-certification" onclick="saveChangesCertification(this)" class="modal-button"
                                 th:each="certifContent : ${certifContents}"
-                                th:attr="data-detail-item-code=${certifContent.detailItemCode},
-                                     data-certification-standard=${certifContent.certificationCriteria},
-                                     data-major-points=${certifContent.keyCheckpoints},
-                                     data-related-laws=${certifContent.relevantLaws},
-                                     data-modification-date=${certifContent.updatedAt},
-                                     data-modifier=${certifContent.modifier},
-                                     id='saveButton-' + ${certifContent.sequence}"
-                                onclick="closeModal('editModal-certification')">등록하기</button>
-<!--                        <button type="button" id="modal-button-certification" onclick="saveChangesCertification()" class="modal-button">등록하기</button>-->
+                                th:attr="data-detail-item-code=${certifContent.detailItemCode}">등록하기</button>
                     </form>
                 </div>
             </div>
@@ -138,7 +133,8 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal('editModal-operational')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">운영 현황 수정</h2>
-                    <form id="editForm-operational" style="width: 100%; height: 100%">
+                    <form id="editForm-operational" action="/update-operationalStatus" method="post" style="width: 100%; height: 100%">
+                        <input type="hidden" value="${currentUser.nickname}">
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate2">일시</label></th>
@@ -161,7 +157,9 @@
                                 <td colspan="2"><textarea id="evidenceName" name="evidenceName" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                         </table>
-                        <button type="button" id="modal-button-operational" onclick="saveChangesOperational()" class="modal-button">등록하기</button>
+                        <button type="button" id="modal-button-operational" onclick="saveChangesOperational(this)" class="modal-button"
+                                th:each="operationalStatus : ${operationalStatuses}"
+                                th:attr="data-detail-item-code=${operationalStatus.detailItemCode}">등록하기</button>
                     </form>
                 </div>
             </div>
@@ -282,7 +280,8 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal('editModal-defects')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">결함 관리 수정</h2>
-                    <form id="editForm-defects" style="width: 100%; height: 100%">
+                    <form id="editForm-defects" action="/update-defectManage" method="post"  style="width: 100%; height: 100%">
+                        <input type="hidden" value="${currentUser.nickname}">
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate4">일시</label></th>
@@ -305,15 +304,22 @@
                             </tr>
                             <tr style="height: 80%">
                                 <th style="width: 20%; text-align: right;"><label for="defectContent">결함 내용</label></th>
-                                <td colspan="2"><textarea id="defectContent" name="defectContent" style="width: 100%; height: 100%" required></textarea></td>
+                                <td colspan="2">
+                                    <textarea id="defectContent" name="defectContent" style="width: 100%; height: 100%" required></textarea>
+                                    <input type="hidden" data-certification="ISMS-P" value="${defectManage.ismsP}">
+                                    <input type="hidden" data-certification="ISO 27K" value="${defectManage.iso27k}">
+                                    <input type="hidden" data-certification="PCI-DSS" value="${defectManage.pciDss}">
+                                </td>
                             </tr>
                         </table>
-                        <button type="button" id="modal-button-defects" onclick="saveChangesDefects()" class="modal-button">등록하기</button>
+                        <button type="button" id="modal-button-defects" onclick="saveChangesDefects(this)" class="modal-button"
+                                th:each="defectManage : ${defectManages}"
+                                th:attr="data-detail-item-code=${defectManage.detailItemCode}">등록하기</button>
                     </form>
                 </div>
             </div>
 
-            <script th:src="@{/js/script.js}"></script>
+            <script th:src="@{/js/modal.js}"></script>
 
 
         </div>

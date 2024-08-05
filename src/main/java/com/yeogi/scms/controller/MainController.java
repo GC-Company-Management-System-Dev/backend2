@@ -3,19 +3,25 @@ package com.yeogi.scms.controller;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.io.File;
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class MainController {
@@ -168,6 +174,64 @@ public class MainController {
             return ResponseEntity.ok().body(Map.of("success", true));
         } else {
             return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error saving details"));
+        }
+    }
+
+    @PostMapping("/update-certifContent")
+    public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
+        String detailItemCode = certifContent.get("detailItemCode");
+        String certificationCriteria = certifContent.get("certificationCriteria");
+        String keyCheckpoints = certifContent.get("keyCheckpoints");
+        String relevantLaws = certifContent.get("relevantLaws");
+        String modifier = certifContent.get("modifier");
+
+        boolean success = certifContentService.updateCertifContent(detailItemCode, certificationCriteria, keyCheckpoints, relevantLaws, modifier);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating certification content"));
+        }
+    }
+
+    @PostMapping("/update-operationalStatus")
+    public ResponseEntity<?> saveOperationalStatus(@RequestBody Map<String, String> operationalStatus) {
+        String detailItemCode = operationalStatus.get("detailItemCode");
+        String status = operationalStatus.get("status");
+        String relatedDocument = operationalStatus.get("relatedDocument");
+        String evidenceName = operationalStatus.get("evidenceName");
+        String modifier = operationalStatus.get("modifier");
+
+        boolean success = operationalStatusService.updateOperationalStatus(detailItemCode, status, relatedDocument, evidenceName, modifier);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating operational status"));
+        }
+    }
+
+    @PostMapping("/update-defectManage")
+    public ResponseEntity<?> saveDefectManage(@RequestBody Map<String, String> defectManage) {
+        String detailItemCode = defectManage.get("detailItemCode");
+        String ismsP = defectManage.get("ismsP");
+        String iso27k = defectManage.get("iso27k");
+        String pciDss = defectManage.get("pciDss");
+        String modifier = defectManage.get("modifier");
+
+        boolean success = defectManageService.updateDefectManage(detailItemCode, ismsP, iso27k, pciDss, modifier);
+
+        // Debugging statements
+        System.out.println("Certification Criteria: " + ismsP);
+        System.out.println("Key Checkpoints: " + iso27k);
+        System.out.println("Relevant Laws: " + pciDss);
+        System.out.println("Modifier: " + modifier);
+        System.out.println("Detail Item Code: " + detailItemCode);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating defect manage"));
         }
     }
 
