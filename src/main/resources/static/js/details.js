@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var isoDetails = isoDetailsTextarea.value;
             var pciDssDetails = pciDssDetailsTextarea.value;
 
-            fetch('/save-details', {
+            fetch('/save-details/' + documentCode, { // 경로에 documentCode 추가
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,8 +51,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     pciDssDetails: pciDssDetails
                 }),
             })
-                .then(response => response.json())
+                .then(response => {
+                    console.log(response); // 응답 확인을 위한 로그
+                    return response.json();
+                })
                 .then(data => {
+                    console.log(data); // 응답 데이터 로그
                     if (data.success) {
                         var isoDetailsCell = document.getElementById('isoDetailsDiv-' + documentCode);
                         var pciDssDetailsCell = document.getElementById('pciDssDiv-' + documentCode);
