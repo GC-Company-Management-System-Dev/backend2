@@ -28,8 +28,11 @@ public class CertifContentRepository {
         });
     }
 
-    public void updateCertifContent(String detailItemCode, String certificationCriteria, String keyCheckpoints, String relevantLaws) {
-        String sql = "UPDATE Certification_Item_Content SET Certification_Criteria = ?, Key_Checkpoints = ?, Relevant_Laws = ?, Updated_At = NOW(), Modifier = ? WHERE Detail_Item_Code = ?";
-        jdbcTemplate.update(sql, certificationCriteria, keyCheckpoints, relevantLaws, detailItemCode);
+    public void updateCertifContent(String detailItemCode, String certificationCriteria, String keyCheckpoints, String relevantLaws, String modifier) {
+        String sql = "UPDATE Certification_Item_Content SET Certification_Criteria = ?, Key_Checkpoints = ?, Relevant_Laws = ?, Updated_At = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), Modifier = ? WHERE Detail_Item_Code = ?";
+        System.out.println("Executing SQL: " + sql);
+        System.out.println("With parameters: " + certificationCriteria + ", " + keyCheckpoints + ", " + relevantLaws + ", " + modifier + ", " + detailItemCode);
+
+        jdbcTemplate.update(sql, certificationCriteria, keyCheckpoints, relevantLaws, modifier, detailItemCode);
     }
 }
