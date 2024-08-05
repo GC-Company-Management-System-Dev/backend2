@@ -29,4 +29,10 @@ public class EvidenceDataRepository {
             }
         });
     }
+
+    public void save(EvidenceData evidenceData) {
+        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, evidenceData.getDetailItemCode(), evidenceData.getFileName(), evidenceData.getFileSize(),
+                evidenceData.getFilePath(), evidenceData.getFileKey().toString(), evidenceData.getCreatedAt(), evidenceData.getCreator());
+    }
 }

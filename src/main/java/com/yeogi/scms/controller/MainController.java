@@ -23,6 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
+
 @Controller
 public class MainController {
 
@@ -34,6 +41,9 @@ public class MainController {
     private final LoginAccountService loginAccountService;
     private final AccessLogService accessLogService;
 
+    private EvidenceDataService evidenceDataService;
+    private final Path root = Paths.get("uploads");
+
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
                           DefectManageService defectManageService, OperationalStatusService operationalStatusService,
@@ -43,6 +53,7 @@ public class MainController {
         this.certifContentService = certifContentService;
         this.defectManageService = defectManageService;
         this.operationalStatusService = operationalStatusService;
+        this.evidenceDataService = evidenceDataService;
         this.loginAccountService = loginAccountService;
         this.accessLogService = accessLogService;
 
@@ -214,19 +225,16 @@ public class MainController {
     @PostMapping("/update-defectManage")
     public ResponseEntity<?> saveDefectManage(@RequestBody Map<String, String> defectManage) {
         String detailItemCode = defectManage.get("detailItemCode");
-        String ismsP = defectManage.get("ismsP");
-        String iso27k = defectManage.get("iso27k");
-        String pciDss = defectManage.get("pciDss");
+        String certificationType = defectManage.get("certificationType");
+        String defectContent = defectManage.get("defectContent");
         String modifier = defectManage.get("modifier");
 
-        boolean success = defectManageService.updateDefectManage(detailItemCode, ismsP, iso27k, pciDss, modifier);
+        System.out.println("Received certificationType: " + certificationType);
+        System.out.println("Received defectContent: " + defectContent);
+        System.out.println("Received modifier: " + modifier);
+        System.out.println("Received detailItemCode: " + detailItemCode);
 
-        // Debugging statements
-        System.out.println("Certification Criteria: " + ismsP);
-        System.out.println("Key Checkpoints: " + iso27k);
-        System.out.println("Relevant Laws: " + pciDss);
-        System.out.println("Modifier: " + modifier);
-        System.out.println("Detail Item Code: " + detailItemCode);
+        boolean success = defectManageService.updateDefectManage(detailItemCode, certificationType, defectContent, modifier);
 
         if (success) {
             return ResponseEntity.ok().body(Map.of("success", true));
@@ -234,5 +242,39 @@ public class MainController {
             return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating defect manage"));
         }
     }
+
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
+                                             @RequestParam("detailItemCode") String detailItemCode,
+                                             @RequestParam("creator") String creator) {
+        try {
+            UUID fileKey = UUID.randomUUID();
+            String fileName = file.getOriginalFilename();
+            double fileSize = file.getSize();
+            Path filePath = this.root.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+
+            EvidenceData evidenceData = new EvidenceData();
+            evidenceData.setFileKey(fileKey);
+            evidenceData.setDetailItemCode(detailItemCode);
+            evidenceData.setFileName(fileName);
+            evidenceData.setFileSize(fileSize);
+            evidenceData.setFilePath(filePath.toString());
+            evidenceData.setCreator(creator);
+            evidenceDataService.saveEvidenceData(evidenceData);
+
+            return ResponseEntity.ok("File uploaded successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to upload file");
+        }
+    }
+
+    @GetMapping("/files/{detailItemCode}")
+    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+    }
+
+
 
 }

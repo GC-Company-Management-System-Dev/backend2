@@ -23,23 +23,23 @@ public class DefectManageService {
         return defectManageRepository.findByDetailCode(detailItemCode);
     }
 
-    public boolean updateDefectManage(String detailItemCode, String ismsP, String iso27k, String pciDss, String modifier){
+    public boolean updateDefectManage(String detailItemCode, String certificationType, String defectContent, String modifier) {
         try {
-            // 현재 로그인한 사용자의 닉네임을 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            modifier = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+            modifier = authentication.getName();
 
-            defectManageRepository.updateDefectManage(detailItemCode, ismsP, iso27k, pciDss, modifier);
+            defectManageRepository.updateDefectManage(detailItemCode, certificationType, defectContent, modifier);
 
-            System.out.println("Certification Criteria: " + ismsP);
-            System.out.println("Key Checkpoints: " + iso27k);
-            System.out.println("Relevant Laws: " + pciDss);
+            System.out.println("Certification Type: " + certificationType);
+            System.out.println("Defect Content: " + defectContent);
             System.out.println("Modifier: " + modifier);
             System.out.println("Detail Item Code: " + detailItemCode);
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
+
+
 }
