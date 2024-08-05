@@ -14,6 +14,7 @@
             display: none !important;
         }
     </style>
+
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
@@ -37,7 +38,7 @@
                 <td style="height: 200px;">
                     <ul>
                         <li th:each="detail : ${certifDetails[scmMaster.documentCode]}">
-                            <a th:href="@{${detail.detailItemCode}}" th:text="${detail.detailItemTypeName}"></a>
+                            <a th:href="@{'/protect-measures/' + ${detail.detailItemCode}}" th:text="${detail.detailItemTypeName}"></a>
                         </li>
                     </ul>
                 </td>
