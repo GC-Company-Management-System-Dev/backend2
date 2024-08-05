@@ -28,13 +28,35 @@ public class DefectManageRepository {
         });
     }
 
-    public void updateDefectManage(String detailItemCode, String ismsP, String iso27k, String pciDss, String modifier) {
-        String sql = "UPDATE Defect_Management SET ISMS_P = ?, ISO27K = ?, PCI_DSS = ?, Updated_At = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), Modifier = ? WHERE Detail_Item_Code = ?";
+    public void updateDefectManage(String detailItemCode, String certificationType, String defectContent, String modifier) {
+        String sql = "UPDATE Defect_Management SET Updated_At = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), ";
+
+        switch (certificationType) {
+            case "ISMS-P":
+                sql += "ISMS_P = ?";
+                break;
+            case "ISO 27K":
+                sql += "ISO27K = ?";
+                break;
+            case "PCI-DSS":
+                sql += "PCI_DSS = ?";
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown certification type: " + certificationType);
+        }
+
+        sql += ", Modifier = ? WHERE Detail_Item_Code = ?";
 
         System.out.println("Executing SQL: " + sql);
-        System.out.println("With parameters: " + ismsP + ", " + iso27k + ", " + pciDss + ", " + modifier + ", " + detailItemCode);
+        System.out.println("With parameters: " + defectContent + ", " + modifier + ", " + detailItemCode);
 
-
-        jdbcTemplate.update(sql, ismsP, iso27k, pciDss, modifier, detailItemCode);
+        try {
+            jdbcTemplate.update(sql, defectContent, modifier, detailItemCode);
+        } catch (Exception e) {
+            System.err.println("Error executing SQL: " + e.getMessage());
+            throw e;
+        }
     }
+
+
 }
