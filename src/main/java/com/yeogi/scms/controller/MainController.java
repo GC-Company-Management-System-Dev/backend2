@@ -3,19 +3,32 @@ package com.yeogi.scms.controller;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.io.File;
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
 
 @Controller
 public class MainController {
@@ -28,6 +41,9 @@ public class MainController {
     private final LoginAccountService loginAccountService;
     private final AccessLogService accessLogService;
 
+    private EvidenceDataService evidenceDataService;
+    private final Path root = Paths.get("uploads");
+
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
                           DefectManageService defectManageService, OperationalStatusService operationalStatusService,
@@ -37,6 +53,7 @@ public class MainController {
         this.certifContentService = certifContentService;
         this.defectManageService = defectManageService;
         this.operationalStatusService = operationalStatusService;
+        this.evidenceDataService = evidenceDataService;
         this.loginAccountService = loginAccountService;
         this.accessLogService = accessLogService;
 
@@ -144,12 +161,19 @@ public class MainController {
                 .findFirst()
                 .orElse("");
 
+        boolean completed = details.stream()
+                .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
+                .map(CertifDetail::isCompleted)
+                .findFirst()
+                .orElse(false);
+
         model.addAttribute("detailItemTypeName", detailItemTypeName);
         model.addAttribute("certifContents", certifContents);
         model.addAttribute("defectManages", defectManages);
         model.addAttribute("operationalStatuses", operationalStatuses);
         model.addAttribute("from", from);
         model.addAttribute("detailItemCode", detailItemCode); // 여기 추가
+        model.addAttribute("completed", completed);
 
         return "detail-template";
     }
@@ -185,5 +209,109 @@ public class MainController {
         }
     }
 
+    @PostMapping("/update-completion-status")
+    public ResponseEntity<?> updateCompletionStatus(@RequestBody Map<String, Object> payload) {
+        String detailItemCode = (String) payload.get("detailItemCode");
+        Boolean completed = (Boolean) payload.get("completed");
+
+        System.out.println("Received request to update completion status: detailItemCode=" + detailItemCode + "completed=" + completed);
+
+        boolean success = certifDetailService.updateCompletionStatus(detailItemCode, completed);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating completion status"));
+        }
+    }
+
+    @PostMapping("/update-certifContent")
+    public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
+        String detailItemCode = certifContent.get("detailItemCode");
+        String certificationCriteria = certifContent.get("certificationCriteria");
+        String keyCheckpoints = certifContent.get("keyCheckpoints");
+        String relevantLaws = certifContent.get("relevantLaws");
+        String modifier = certifContent.get("modifier");
+
+        boolean success = certifContentService.updateCertifContent(detailItemCode, certificationCriteria, keyCheckpoints, relevantLaws, modifier);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating certification content"));
+        }
+    }
+
+    @PostMapping("/update-operationalStatus")
+    public ResponseEntity<?> saveOperationalStatus(@RequestBody Map<String, String> operationalStatus) {
+        String detailItemCode = operationalStatus.get("detailItemCode");
+        String status = operationalStatus.get("status");
+        String relatedDocument = operationalStatus.get("relatedDocument");
+        String evidenceName = operationalStatus.get("evidenceName");
+        String modifier = operationalStatus.get("modifier");
+
+        boolean success = operationalStatusService.updateOperationalStatus(detailItemCode, status, relatedDocument, evidenceName, modifier);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating operational status"));
+        }
+    }
+
+    @PostMapping("/update-defectManage")
+    public ResponseEntity<?> saveDefectManage(@RequestBody Map<String, String> defectManage) {
+        String detailItemCode = defectManage.get("detailItemCode");
+        String certificationType = defectManage.get("certificationType");
+        String defectContent = defectManage.get("defectContent");
+        String modifier = defectManage.get("modifier");
+
+        System.out.println("Received certificationType: " + certificationType);
+        System.out.println("Received defectContent: " + defectContent);
+        System.out.println("Received modifier: " + modifier);
+        System.out.println("Received detailItemCode: " + detailItemCode);
+
+        boolean success = defectManageService.updateDefectManage(detailItemCode, certificationType, defectContent, modifier);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating defect manage"));
+        }
+    }
+
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
+                                             @RequestParam("detailItemCode") String detailItemCode,
+                                             @RequestParam("creator") String creator) {
+        try {
+            UUID fileKey = UUID.randomUUID();
+            String fileName = file.getOriginalFilename();
+            double fileSize = file.getSize();
+            Path filePath = this.root.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+
+            EvidenceData evidenceData = new EvidenceData();
+            evidenceData.setFileKey(fileKey);
+            evidenceData.setDetailItemCode(detailItemCode);
+            evidenceData.setFileName(fileName);
+            evidenceData.setFileSize(fileSize);
+            evidenceData.setFilePath(filePath.toString());
+            evidenceData.setCreator(creator);
+            evidenceDataService.saveEvidenceData(evidenceData);
+
+            return ResponseEntity.ok("File uploaded successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to upload file");
+        }
+    }
+
+    @GetMapping("/files/{detailItemCode}")
+    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+    }
+
 
 }
+

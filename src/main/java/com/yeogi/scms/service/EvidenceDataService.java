@@ -20,4 +20,8 @@ public class EvidenceDataService {
     public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
         return evidenceDataRepository.findByDetailCode(detailItemCode);
     }
+
+    public void saveEvidenceData(EvidenceData evidenceData) {
+        evidenceDataRepository.save(evidenceData);
+    }
 }

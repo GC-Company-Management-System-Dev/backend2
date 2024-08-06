@@ -2,6 +2,8 @@
 function DropFile(dropAreaId, fileListId) {
     let dropArea = document.getElementById(dropAreaId);
     let fileList = document.getElementById(fileListId);
+    let detailItemCode = document.getElementById("detailItemCode").value; // Detail Item Code from your context
+    let creator = "creatorName"; // Set the creator name appropriately
 
     function preventDefaults(e) {
         e.preventDefault();
@@ -79,6 +81,36 @@ function DropFile(dropAreaId, fileListId) {
         return fileDOM;
     }
 
+    function uploadFile(file) {
+        let formData = new FormData();
+        formData.append("file", file);
+        formData.append("detailItemCode", detailItemCode);
+        formData.append("creator", creator);
+
+        fetch("/api/evidence/upload", {
+            method: "POST",
+            body: formData
+        }).then(response => response.text())
+            .then(result => {
+                console.log(result);
+                getUploadedFiles();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function getUploadedFiles() {
+        fetch(`/api/evidence/files/${detailItemCode}`)
+            .then(response => response.json())
+            .then(files => {
+                fileList.innerHTML = '';
+                files.forEach(file => {
+                    fileList.appendChild(renderFile(file));
+                });
+            });
+    }
+
     function downloadFile(fileURL) {
         // 파일 다운로드 로직을 여기에 추가
         // 예를 들어, 새 탭에서 파일 다운로드 URL을 열도록 하거나, AJAX 요청을 사용하여 파일을 다운로드할 수 있습니다.
@@ -91,8 +123,12 @@ function DropFile(dropAreaId, fileListId) {
     dropArea.addEventListener("drop", handleDrop, false);
 
     return {
-        handleFiles
+        handleFiles,
+        getUploadedFiles
     };
 }
 
 const dropFile = new DropFile("drop-file", "files");
+
+// Call this function when the modal is opened or the page is loaded to show existing files
+dropFile.getUploadedFiles();
