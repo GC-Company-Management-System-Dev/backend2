@@ -27,4 +27,10 @@ public class OperationalStatusRepository {
             }
         });
     }
+
+    public void updateOperationalStatus(String detailItemCode, String status, String relatedDocument, String evidenceName, String modifier) {
+        String sql = "UPDATE Operational_Status SET Status = ?, Related_Document = ?, Evidence_Name = ?, Updated_At = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), Modifier = ? WHERE Detail_Item_Code = ?";
+
+        jdbcTemplate.update(sql, status, relatedDocument, evidenceName, modifier, detailItemCode);
+    }
 }

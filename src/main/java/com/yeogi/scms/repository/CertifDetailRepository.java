@@ -37,4 +37,10 @@ public class CertifDetailRepository {
             }
         });
     }
+
+    // 작성 완료 체크 박스
+    public int updateCompletionStatus(String detailItemCode, boolean completed) {
+        String sql = "UPDATE Certification_Detail_Item SET Completed = ? WHERE Detail_Item_Code = ?";
+        return jdbcTemplate.update(sql, completed, detailItemCode);
+    }
 }
