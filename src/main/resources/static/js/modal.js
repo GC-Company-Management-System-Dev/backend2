@@ -1,5 +1,41 @@
 // static/js/modal.js
 
+// 작성 완료 체크 박스
+document.addEventListener('DOMContentLoaded', (event) => {
+    const checkbox = document.getElementById('status-completion');
+    const detailItemCode = document.getElementById('detailItemCode').value;
+
+    console.log(`Initial detailItemCode: ${detailItemCode}`);
+
+    checkbox.addEventListener('change', () => {
+        const completed = checkbox.checked;
+
+        console.log(`Sending request to update completion status: detailItemCode=${detailItemCode}, completed=${completed}`);
+
+        fetch(`/update-completion-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                detailItemCode: detailItemCode,
+                completed: completed
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Status updated successfully');
+                } else {
+                    console.error('Error updating status:', data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
+});
+
 // 모달 열기 함수
 function openModal(modalId, buttonId) {
     var modal = document.getElementById(modalId);
@@ -44,6 +80,7 @@ function openModal(modalId, buttonId) {
         var modifierElement = document.querySelector('[data-modifier]');
         var modificationDate = modificationDateElement ? modificationDateElement.getAttribute('data-modification-date') : "N/A";
         var modifier = modifierElement ? modifierElement.getAttribute('data-modifier') : "N/A";
+
 
         // 인증 구분 선택 시 해당 데이터를 표시
         var certificationTypeSelect = document.getElementById('certificationType');

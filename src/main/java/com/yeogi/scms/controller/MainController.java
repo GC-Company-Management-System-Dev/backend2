@@ -161,12 +161,19 @@ public class MainController {
                 .findFirst()
                 .orElse("");
 
+        boolean completed = details.stream()
+                .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
+                .map(CertifDetail::isCompleted)
+                .findFirst()
+                .orElse(false);
+
         model.addAttribute("detailItemTypeName", detailItemTypeName);
         model.addAttribute("certifContents", certifContents);
         model.addAttribute("defectManages", defectManages);
         model.addAttribute("operationalStatuses", operationalStatuses);
         model.addAttribute("from", from);
         model.addAttribute("detailItemCode", detailItemCode); // 여기 추가
+        model.addAttribute("completed", completed);
 
         return "detail-template";
     }
@@ -202,7 +209,22 @@ public class MainController {
         }
     }
 
-<<<<<<< HEAD
+    @PostMapping("/update-completion-status")
+    public ResponseEntity<?> updateCompletionStatus(@RequestBody Map<String, Object> payload) {
+        String detailItemCode = (String) payload.get("detailItemCode");
+        Boolean completed = (Boolean) payload.get("completed");
+
+        System.out.println("Received request to update completion status: detailItemCode=" + detailItemCode + "completed=" + completed);
+
+        boolean success = certifDetailService.updateCompletionStatus(detailItemCode, completed);
+
+        if (success) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error updating completion status"));
+        }
+    }
+
     @PostMapping("/update-certifContent")
     public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
         String detailItemCode = certifContent.get("detailItemCode");

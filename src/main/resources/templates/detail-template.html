@@ -14,10 +14,10 @@
 <main class="d-flex flex-nowrap">
     <div th:replace="fragments/sidebar :: sidebar"></div>
     <div class="content p-4 main-contents">
-        <input type="hidden" id="detailItemCode" name="detailItemCode">
+        <input type="hidden" id="detailItemCode" name="detailItemCode" th:value="${detailItemCode}">
         <p class="table_name" style="display: flex; align-items: center; margin-right: auto;" th:text="${detailItemTypeName}"> 세부 항목 이름</p>
         <div style="display: flex; align-items: center; margin-left: auto;">
-            <input type="checkbox" id="status-completion" name="status-completion">
+            <input type="checkbox" id="status-completion" name="status-completion" th:checked="${completed}">
             <label for="status-completion">작성 완료</label>
         </div>
 
