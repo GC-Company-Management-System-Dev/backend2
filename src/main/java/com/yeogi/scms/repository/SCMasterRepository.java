@@ -30,6 +30,9 @@ public class SCMasterRepository {
 
     public void updateDetails(String documentCode, String isoDetails, String pciDssDetails) {
         String sql = "UPDATE Security_Certification_Master SET ISO_Details = ?, PCI_DSS_Details = ? WHERE Document_Code = ?";
+        System.out.println("Updating details for documentCode: " + documentCode);
+        System.out.println("ISO Details: " + isoDetails);
+        System.out.println("PCI DSS Details: " + pciDssDetails);
         jdbcTemplate.update(sql, isoDetails, pciDssDetails, documentCode);
     }
 
