@@ -132,18 +132,29 @@ public class MainController {
 
         return "privacyRequire";
     }
+    @GetMapping("/manage-system/{detailItemCode}")
+    public String showManageSystemDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+        return showDetail(detailItemCode, "manage-system", model, user);
+    }
 
-    @GetMapping("/{detailItemCode}")
-    public String showDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+    @GetMapping("/protect-measures/{detailItemCode}")
+    public String showProtectMeasuresDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+        return showDetail(detailItemCode, "protect-measures", model, user);
+    }
+
+    @GetMapping("/privacy-require/{detailItemCode}")
+    public String showPrivacyRequireDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+        return showDetail(detailItemCode, "privacy-require", model, user);
+    }
+
+    public String showDetail(String detailItemCode, String from, Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
 
         List<CertifDetail> details = certifDetailService.getCertifDetailByDCode(detailItemCode);
         List<CertifContent> certifContents = certifContentService.getCertifContentByDCode(detailItemCode);
         List<DefectManage> defectManages = defectManageService.getDefectManageByDCode(detailItemCode);
         List<OperationalStatus> operationalStatuses = operationalStatusService.getOperationalStatusByDCode(detailItemCode);
-        //List<EvidenceData> evidenceDataList = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
 
-        // detailItemCode와 일치하는 행을 찾아 detailItemTypeName 저장
         String detailItemTypeName = details.stream()
                 .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
                 .map(CertifDetail::getDetailItemTypeName)
@@ -154,10 +165,12 @@ public class MainController {
         model.addAttribute("certifContents", certifContents);
         model.addAttribute("defectManages", defectManages);
         model.addAttribute("operationalStatuses", operationalStatuses);
-        //model.addAttribute("evidenceDataList", evidenceDataList);
+        model.addAttribute("from", from);
+        model.addAttribute("detailItemCode", detailItemCode); // 여기 추가
 
         return "detail-template";
     }
+
 
     @GetMapping("/log-manage")
     public String showLogs(Model model, @AuthenticationPrincipal CustomUserDetails user,
@@ -173,12 +186,13 @@ public class MainController {
     }
 
 
-    @PostMapping("/save-details")
-    public ResponseEntity<?> saveDetails(@RequestBody Map<String, String> details) {
+    @PostMapping("/save-details/{detailItemCode}")
+    public ResponseEntity<?> saveDetails(@PathVariable String detailItemCode, @RequestBody Map<String, String> details) {
         String documentCode = details.get("documentCode");
         String isoDetails = details.get("isoDetails");
         String pciDssDetails = details.get("pciDssDetails");
 
+        // Use detailItemCode in your business logic if needed
         boolean success = scmMasterService.saveDetailsToDB(documentCode, isoDetails, pciDssDetails);
 
         if (success) {
@@ -188,6 +202,7 @@ public class MainController {
         }
     }
 
+<<<<<<< HEAD
     @PostMapping("/update-certifContent")
     public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
         String detailItemCode = certifContent.get("detailItemCode");
@@ -276,5 +291,5 @@ public class MainController {
     }
 
 
-
 }
+
