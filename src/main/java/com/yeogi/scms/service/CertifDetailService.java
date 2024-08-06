@@ -24,4 +24,11 @@ public class CertifDetailService {
     public List<CertifDetail> getCertifDetailByDCode(String detailItemCode) {
         return certifDetailRepository.findByDetailCode(detailItemCode);
     }
+
+    // 작성 완료 체크 박스
+    public boolean updateCompletionStatus(String detailItemCode, boolean completed) {
+        int rowsUpdated = certifDetailRepository.updateCompletionStatus(detailItemCode, completed);
+        return rowsUpdated > 0;
+    }
+
 }
