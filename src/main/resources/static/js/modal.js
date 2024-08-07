@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         console.log(`Sending request to update completion status: detailItemCode=${detailItemCode}, completed=${completed}`);
 
-        fetch(`/update-completion-status`, {
+        fetch(`/save-details/${detailItemCode}/update-completion-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ function saveChangesCertification(button) {
         return;
     }
 
-    fetch('/update-certifContent', {
+    fetch('/save-details/${detailItemCode}/update-certifContent', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -218,7 +218,7 @@ function saveChangesOperational(button) {
         return;
     }
 
-    fetch('/update-operationalStatus', {
+    fetch('/save-details/${detailItemCode}/update-operationalStatus', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -279,7 +279,7 @@ function saveChangesDefects(button) {
         return;
     }
 
-    fetch('/update-defectManage', {
+    fetch('/save-details/${detailItemCode}/update-defectManage', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
