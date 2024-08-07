@@ -21,23 +21,9 @@ public class SCMasterService {
         this.repository = repository;
     }
 
-    public List<SCMaster> getFilteredSCMaster(String sccode) {
+    public List<SCMaster> getSCMasterBySCCode(String sccode) {
         List<SCMaster> allRecords = repository.findBySCCode(sccode);
-
-        // 최신 생성일을 가진 행의 인증년도를 찾음
-        Optional<SCMaster> latestRecordOpt = allRecords.stream()
-                .max((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
-
-        if (latestRecordOpt.isPresent()) {
-            int latestCertificationYear = latestRecordOpt.get().getCertificationYear();
-
-            // 해당 인증년도와 같은 행만 필터링
-            return allRecords.stream()
-                    .filter(record -> record.getCertificationYear() == latestCertificationYear)
-                    .collect(Collectors.toList());
-        }
-
-        return List.of();
+        return getByLatestYear(allRecords);
     }
 
     public boolean saveDetailsToDB(String documentCode, String isoDetails, String pciDssDetails) {
@@ -50,6 +36,19 @@ public class SCMasterService {
         }
     }
 
+    private List<SCMaster> getByLatestYear(List<SCMaster> records) {
+        Optional<SCMaster> latestRecordOpt = records.stream()
+                .max((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
+
+        if (latestRecordOpt.isPresent()) {
+            int latestCertificationYear = latestRecordOpt.get().getCertificationYear();
+            return records.stream()
+                    .filter(record -> record.getCertificationYear() == latestCertificationYear)
+                    .collect(Collectors.toList());
+        }
+
+        return List.of();
+    }
 
 
 }
