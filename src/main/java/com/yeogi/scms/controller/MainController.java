@@ -42,12 +42,14 @@ public class MainController {
     private final AccessLogService accessLogService;
 
     private EvidenceDataService evidenceDataService;
+
+    private final AuthenticationService authenticationService;
     private final Path root = Paths.get("uploads");
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
                           DefectManageService defectManageService, OperationalStatusService operationalStatusService,
-                          LoginAccountService loginAccountService, AccessLogService accessLogService) {
+                          LoginAccountService loginAccountService, AccessLogService accessLogService, AuthenticationService authenticationService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
         this.certifContentService = certifContentService;
@@ -56,7 +58,7 @@ public class MainController {
         this.evidenceDataService = evidenceDataService;
         this.loginAccountService = loginAccountService;
         this.accessLogService = accessLogService;
-
+        this.authenticationService = authenticationService;
     }
 
     private void addNicknameToModel(Model model, CustomUserDetails user) {
@@ -76,6 +78,19 @@ public class MainController {
             model.addAttribute("error", "Invalid id or password");
         }
         return "login";
+    }
+
+    @PostMapping("/verify-password")
+    @ResponseBody
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request, @AuthenticationPrincipal CustomUserDetails user) {
+        String password = request.get("password");
+
+        boolean isPasswordValid = authenticationService.verifyPassword(user.getUsername(), password);
+        if (isPasswordValid) {
+            return ResponseEntity.ok("Password verified successfully");
+        } else {
+            return ResponseEntity.status(401).body("Invalid password");
+        }
     }
 
     @GetMapping("/manage-system")

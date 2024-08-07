@@ -8,7 +8,12 @@
                 <span th:text="${nickname}">임직원 이름</span>
             </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <li><a class="dropdown-item" href="/logout">로그아웃</a></li>
+                <li>
+                    <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit();">로그아웃</a>
+                    <form id="logout-form" th:action="@{/logout}" method="post" style="display: none;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    </form>
+                </li>
             </ul>
         </div>
     </div>
