@@ -184,12 +184,26 @@
             <label for="confirm-reset">네. 초기화 하겠습니다.</label>
           </div>
           <div class="modal-footer">
-            <button class="proceed-button">진행하기</button>
+            <button class="proceed-button" id="proceed-button" disabled>진행하기</button>
             <button class="cancel-button">취소하기</button>
           </div>
         </div>
       </div>
 
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          var checkbox = document.getElementById('confirm-reset');
+          var proceedButton = document.getElementById('proceed-button');
+
+          checkbox.addEventListener('change', function () {
+            if (checkbox.checked) {
+              proceedButton.disabled = false;
+            } else {
+              proceedButton.disabled = true;
+            }
+          });
+        });
+      </script>
 
     </div>
 

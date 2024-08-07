@@ -97,13 +97,13 @@ public class MainController {
     public String showManageSystem(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
         // (1) SCMasterService.getFilteredSCMaster("MANAGE") 호출
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("MANAGE");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("MANAGE");
 
-        // (2) 각 SCMaster의 documentCode로 CertifDetailService.getFilteredCertifDetail(documentCode) 호출
+        // (2) 각 SCMaster의 documentCode에 맵핑되는 CertifDetail만 가져옴
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         // 모델에 추가
@@ -117,12 +117,12 @@ public class MainController {
     public String showProtectMeasures(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
 
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PROTECT");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("PROTECT");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         model.addAttribute("scmMasters", scmMasters);
@@ -134,12 +134,12 @@ public class MainController {
     @GetMapping("/privacy-require")
     public String showPrivacyRequire(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PRIVACY");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("PRIVACY");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         model.addAttribute("scmMasters", scmMasters);
