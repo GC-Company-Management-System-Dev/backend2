@@ -31,13 +31,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return nickname;
+        return username;
     }
 
     public String getNickname() {
         return nickname;
     }
-
 
     @Override
     public boolean isAccountNonExpired() {

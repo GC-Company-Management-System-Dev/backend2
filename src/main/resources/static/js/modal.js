@@ -1,5 +1,9 @@
 // static/js/modal.js
 
+// CSRF 토큰 설정
+var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
 // 작성 완료 체크 박스
 document.addEventListener('DOMContentLoaded', (event) => {
     const checkbox = document.getElementById('status-completion');
@@ -16,6 +20,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                [header]: token
             },
             body: JSON.stringify({
                 detailItemCode: detailItemCode,
@@ -155,6 +160,7 @@ function saveChangesCertification(button) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,
@@ -216,6 +222,7 @@ function saveChangesOperational(button) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,
@@ -276,6 +283,7 @@ function saveChangesDefects(button) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,
