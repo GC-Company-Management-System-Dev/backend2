@@ -6,7 +6,6 @@
     <title>각 세부항목</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <th:block th:replace="fragments/head :: common-head"></th:block>
-
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
@@ -68,6 +67,7 @@
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">인증항목 내용 수정</h2>
                     <form id="editForm-certification" action="/update-certifContent" method="post" style="width: 100%; height: 100%">
                         <input type="hidden" id="currentUserNickname" value="${currentUser.nickname}">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate1">일시</label></th>
@@ -136,6 +136,7 @@
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">운영 현황 수정</h2>
                     <form id="editForm-operational" action="/update-operationalStatus" method="post" style="width: 100%; height: 100%">
                         <input type="hidden" value="${currentUser.nickname}">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate2">일시</label></th>
@@ -187,6 +188,7 @@
                     <span class="close" onclick="closeModal('editModal-proof')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">증적자료 업로드</h2>
                     <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate3">일시</label></th>
@@ -284,6 +286,7 @@
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">결함 관리 수정</h2>
                     <form id="editForm-defects" action="/update-defectManage" method="post"  style="width: 100%; height: 100%">
                         <input type="hidden" value="${currentUser.nickname}">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
                                 <th style="width: 20%; text-align: right;"><label for="modificationDate4">일시</label></th>
