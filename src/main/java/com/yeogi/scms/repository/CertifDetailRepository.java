@@ -18,7 +18,7 @@ public class CertifDetailRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<CertifDetail> findByDocuCode(String documentCode) {
+    public List<CertifDetail> findByDocCode(String documentCode) {
         String sql = "SELECT * FROM Certification_Detail_Item WHERE Document_Code = ?";
         return jdbcTemplate.query(sql, new Object[]{documentCode}, new RowMapper<CertifDetail>() {
             @Override
@@ -42,5 +42,23 @@ public class CertifDetailRepository {
     public int updateCompletionStatus(String detailItemCode, boolean completed) {
         String sql = "UPDATE Certification_Detail_Item SET Completed = ? WHERE Detail_Item_Code = ?";
         return jdbcTemplate.update(sql, completed, detailItemCode);
+    }
+
+    // 인증 연도 가져오기
+    public Integer findCertificationYearByDetailItemCode(String detailItemCode) {
+        String sql = "SELECT Certification_Year FROM Certification_Detail_Item WHERE Detail_Item_Code = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{detailItemCode}, Integer.class);
+    }
+
+    // 월별 인덱스 업데이트
+    public int updateMonthlyIndex(String detailItemCode, Integer monthlyIndex) {
+        String sql = "UPDATE Certification_Detail_Item SET Monthly_Index = ? WHERE Detail_Item_Code = ?";
+        return jdbcTemplate.update(sql, monthlyIndex, detailItemCode);
+    }
+
+    // 월별 인덱스 삭제
+    public int deleteMonthlyIndex(String detailItemCode) {
+        String sql = "UPDATE Certification_Detail_Item SET Monthly_Index = NULL WHERE Detail_Item_Code = ?";
+        return jdbcTemplate.update(sql, detailItemCode);
     }
 }
