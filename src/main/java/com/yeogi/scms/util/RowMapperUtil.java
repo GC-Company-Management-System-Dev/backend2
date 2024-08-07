@@ -91,14 +91,33 @@ public class RowMapperUtil {
         return loginAccount;
         }
 
-        public static AccessLog mapAccessLog(ResultSet rs) throws SQLException {
-        AccessLog accessLog = new AccessLog();
-        accessLog.setLogSequence(rs.getLong("Log_Sequence"));
-        accessLog.setAccessId(rs.getString("Access_ID"));
-        accessLog.setAction(rs.getString("Action"));
-        accessLog.setAccessPath(rs.getString("Access_Path"));
-        accessLog.setTimestamp(rs.getTimestamp("Timestamp").toLocalDateTime());
-        return accessLog;
+    public static AccessLog mapAccessLog(ResultSet rs) throws SQLException {
+    AccessLog accessLog = new AccessLog();
+    accessLog.setLogSequence(rs.getLong("Log_Sequence"));
+    accessLog.setAccessId(rs.getString("Access_ID"));
+    accessLog.setAction(rs.getString("Action"));
+    accessLog.setAccessPath(rs.getString("Access_Path"));
+    accessLog.setTimestamp(rs.getTimestamp("Timestamp").toLocalDateTime());
+    return accessLog;}
+
+    public static MonthlyIndexInfo mapMonthlyIndexInfo(ResultSet rs) throws SQLException {
+        MonthlyIndexInfo monthlyIndexInfo = new MonthlyIndexInfo();
+        monthlyIndexInfo.setCertificationYear(rs.getInt("Certification_Year"));
+        monthlyIndexInfo.setJan(rs.getInt("Jan"));
+        monthlyIndexInfo.setFeb(rs.getInt("Feb"));
+        monthlyIndexInfo.setMar(rs.getInt("Mar"));
+        monthlyIndexInfo.setApr(rs.getInt("Apr"));
+        monthlyIndexInfo.setMay(rs.getInt("May"));
+        monthlyIndexInfo.setJun(rs.getInt("Jun"));
+        monthlyIndexInfo.setJul(rs.getInt("Jul"));
+        monthlyIndexInfo.setAug(rs.getInt("Aug"));
+        monthlyIndexInfo.setSep(rs.getInt("Sep"));
+        monthlyIndexInfo.setOct(rs.getInt("Oct"));
+        monthlyIndexInfo.setNov(rs.getInt("Nov"));
+        monthlyIndexInfo.setDecem(rs.getInt("Decem"));
+        monthlyIndexInfo.setCreatedAt(rs.getTimestamp("Created_At").toLocalDateTime());
+        return monthlyIndexInfo;
     }
+
     }
 
