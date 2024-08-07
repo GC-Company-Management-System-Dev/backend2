@@ -9,7 +9,15 @@
   <script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
   <script src="/static/js/modal.js"></script>
   <script>
-    $(function() {
+    $(document).ready(function() {
+      // CSRF 토큰 설정
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
+
+      $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+      });
+
       $(".search-button").hover(
               function() {
                 // 마우스 오버 시
@@ -28,10 +36,7 @@
                 });
               }
       );
-    });
 
-
-    $(function () {
       $("#datepicker").datepicker({
         changeMonth: false, // 월 선택 비활성화
         changeDay: false, // 일 선택 비활성화
@@ -61,15 +66,11 @@
               .html("\
         .hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
               .appendTo("head");
-    });
 
-    $(function () {
-      $("#search-button").click(function () {
+      $("#search-button").click(function() {
         $("#datepicker").datepicker("show");
       });
-    });
 
-    $(document).ready(function() {
       $("#reset-year-button").click(function() {
         $("#firstModal").css("display", "block");
       });
@@ -79,8 +80,21 @@
       });
 
       $("#firstModal .modal-button-main").click(function() {
-        $("#firstModal").css("display", "none");
-        $("#secondModal").css("display", "block");
+        var password = $("#firstModal .modal-input").val();
+
+        $.ajax({
+          url: "/verify-password",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ password: password }),
+          success: function(response) {
+            $("#firstModal").css("display", "none");
+            $("#secondModal").css("display", "block");
+          },
+          error: function(xhr) {
+            alert("비밀번호가 일치하지 않습니다.");
+          }
+        });
       });
 
       $("#secondModal .proceed-button").click(function() {
@@ -92,7 +106,6 @@
         $(".modal-main").css("display", "none");
       });
     });
-
   </script>
 
 </head>
