@@ -224,9 +224,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-completion-status")
-    public ResponseEntity<?> updateCompletionStatus(@RequestBody Map<String, Object> payload) {
-        String detailItemCode = (String) payload.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-completion-status")
+    public ResponseEntity<?> updateCompletionStatus(@PathVariable String detailItemCode, @RequestBody Map<String, Object> payload) {
+        detailItemCode = (String) payload.get("detailItemCode");
         Boolean completed = (Boolean) payload.get("completed");
 
         System.out.println("Received request to update completion status: detailItemCode=" + detailItemCode + "completed=" + completed);
@@ -240,9 +240,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-certifContent")
-    public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
-        String detailItemCode = certifContent.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-certifContent")
+    public ResponseEntity<?> saveCertifContent(@PathVariable String detailItemCode, @RequestBody Map<String, String> certifContent) {
+        detailItemCode = certifContent.get("detailItemCode");
         String certificationCriteria = certifContent.get("certificationCriteria");
         String keyCheckpoints = certifContent.get("keyCheckpoints");
         String relevantLaws = certifContent.get("relevantLaws");
@@ -257,9 +257,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-operationalStatus")
-    public ResponseEntity<?> saveOperationalStatus(@RequestBody Map<String, String> operationalStatus) {
-        String detailItemCode = operationalStatus.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-operationalStatus")
+    public ResponseEntity<?> saveOperationalStatus(@PathVariable String detailItemCode, @RequestBody Map<String, String> operationalStatus) {
+        detailItemCode = operationalStatus.get("detailItemCode");
         String status = operationalStatus.get("status");
         String relatedDocument = operationalStatus.get("relatedDocument");
         String evidenceName = operationalStatus.get("evidenceName");
@@ -274,9 +274,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-defectManage")
-    public ResponseEntity<?> saveDefectManage(@RequestBody Map<String, String> defectManage) {
-        String detailItemCode = defectManage.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-defectManage")
+    public ResponseEntity<?> saveDefectManage(@PathVariable String detailItemCode, @RequestBody Map<String, String> defectManage) {
+        detailItemCode = defectManage.get("detailItemCode");
         String certificationType = defectManage.get("certificationType");
         String defectContent = defectManage.get("defectContent");
         String modifier = defectManage.get("modifier");
@@ -314,7 +314,7 @@ public class MainController {
             evidenceData.setFileSize(fileSize);
             evidenceData.setFilePath(filePath.toString());
             evidenceData.setCreator(creator);
-            evidenceDataService.saveEvidenceData(evidenceData);
+            //evidenceDataService.saveEvidenceData(evidenceData);
 
             return ResponseEntity.ok("File uploaded successfully");
         } catch (Exception e) {
