@@ -98,7 +98,7 @@
       });
 
       $("#secondModal .proceed-button").click(function() {
-        alert("초기화 되었습니다.");
+        alert("잠시만 기다려주세요.");
         $(".modal-main").css("display", "none");
       });
 
@@ -178,7 +178,9 @@
       <div id="secondModal" class="modal-main">
         <div class="modal-content-main">
           <span class="close-main">&times;</span>
-          <div class="modal-title-main">다음 단계 진행 시 지금까지 작성하신 <span class="warning-text">인증 현황 및 증적이 초기화</span>되며, <br> 기준년도가 <span class="warning-text">다음 인증년도로 변경</span>되게 됩니다.<br> 그래도 초기화 하시겠습니까?</div>
+          <div class="modal-title-main">
+            다음 단계 진행 시 지금까지 작성하신 <span class="warning-text">인증 현황 및 증적이 초기화</span>되며, <br> 기준년도가 <span class="warning-text">다음 인증년도로 변경</span>되게 됩니다.<br> 그래도 초기화 하시겠습니까?
+          </div>
           <div class="modal-checkbox-label" style="text-align: center; justify-content: center;">
             <input type="checkbox" id="confirm-reset" style="margin-right: 10px;">
             <label for="confirm-reset">네. 초기화 하겠습니다.</label>
@@ -196,14 +198,46 @@
           var proceedButton = document.getElementById('proceed-button');
 
           checkbox.addEventListener('change', function () {
-            if (checkbox.checked) {
-              proceedButton.disabled = false;
-            } else {
-              proceedButton.disabled = true;
-            }
+            proceedButton.disabled = !checkbox.checked;
+          });
+
+          document.getElementById('proceed-button').addEventListener('click', function() {
+            // 진행하기 버튼 클릭 시 AJAX 요청 전송
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            fetch('/api/initializeData', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                [header]: token
+              }
+            })
+                    .then(response => {
+                      if (response.ok) {
+                        alert('데이터 초기화가 성공적으로 완료되었습니다.');
+                        // 필요에 따라 페이지를 리로드하거나 모달을 닫는 동작 추가
+                        document.getElementById('secondModal').style.display = 'none';
+                      } else {
+                        alert('데이터 초기화 중 오류가 발생했습니다.');
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Error:', error);
+                      alert('데이터 초기화 중 오류가 발생했습니다.');
+                    });
+          });
+
+          document.querySelector('.cancel-button').addEventListener('click', function() {
+            document.getElementById('secondModal').style.display = 'none';
+          });
+
+          document.querySelector('.close-main').addEventListener('click', function() {
+            document.getElementById('secondModal').style.display = 'none';
           });
         });
       </script>
+
 
     </div>
 

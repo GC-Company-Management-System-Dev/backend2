@@ -1,12 +1,13 @@
 package com.yeogi.scms.domain;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class DetailEntity {
     private Long sequence;
     private String detailItemCode;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     private String modifier;
 
     // Getters and setters
@@ -27,19 +28,19 @@ public class DetailEntity {
         this.detailItemCode = detailItemCode;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
 
