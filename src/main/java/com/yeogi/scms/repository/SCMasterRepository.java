@@ -28,6 +28,16 @@ public class SCMasterRepository {
         });
     }
 
+    public List<SCMaster> findAll() {
+        String sql = "SELECT * FROM Security_Certification_Master";
+        return jdbcTemplate.query(sql, new RowMapper<SCMaster>() {
+            @Override
+            public SCMaster mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return RowMapperUtil.mapSCMaster(rs);
+            }
+        });
+    }
+
     public void updateDetails(String documentCode, String isoDetails, String pciDssDetails) {
         String sql = "UPDATE Security_Certification_Master SET ISO_Details = ?, PCI_DSS_Details = ? WHERE Document_Code = ?";
         System.out.println("Updating details for documentCode: " + documentCode);
@@ -36,6 +46,22 @@ public class SCMasterRepository {
         jdbcTemplate.update(sql, isoDetails, pciDssDetails, documentCode);
     }
 
+    public void saveAll(List<SCMaster> masters) {
+        String sql = "INSERT INTO Security_Certification_Master " +
+                "(Document_Code, Classification_Code, Certification_Year, Item_Code, " +
+                "Certification_Type_Name, ISO_Details, PCI_DSS_Details, Updated_At) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
+        jdbcTemplate.batchUpdate(sql, masters, masters.size(), (ps, master) -> {
+            ps.setString(1, master.getDocumentCode());
+            ps.setString(2, master.getClassificationCode());
+            ps.setInt(3, master.getCertificationYear());
+            ps.setString(4, master.getItemCode());
+            ps.setString(5, master.getCertificationTypeName());
+            ps.setString(6, master.getIsoDetails());
+            ps.setString(7, master.getPciDssDetails());
+            ps.setTimestamp(8, master.getUpdatedAt());
+        });
+    }
 
 }

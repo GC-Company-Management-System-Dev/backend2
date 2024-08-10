@@ -1,5 +1,9 @@
 // static/js/modal.js
 
+// CSRF 토큰 설정
+var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
 // 작성 완료 체크 박스
 document.addEventListener('DOMContentLoaded', (event) => {
     const checkbox = document.getElementById('status-completion');
@@ -12,10 +16,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         console.log(`Sending request to update completion status: detailItemCode=${detailItemCode}, completed=${completed}`);
 
-        fetch(`/update-completion-status`, {
+        fetch(`/save-details/${detailItemCode}/update-completion-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                [header]: token
             },
             body: JSON.stringify({
                 detailItemCode: detailItemCode,
@@ -151,10 +156,11 @@ function saveChangesCertification(button) {
         return;
     }
 
-    fetch('/update-certifContent', {
+    fetch('/save-details/${detailItemCode}/update-certifContent', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,
@@ -212,10 +218,11 @@ function saveChangesOperational(button) {
         return;
     }
 
-    fetch('/update-operationalStatus', {
+    fetch('/save-details/${detailItemCode}/update-operationalStatus', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,
@@ -272,10 +279,11 @@ function saveChangesDefects(button) {
         return;
     }
 
-    fetch('/update-defectManage', {
+    fetch('/save-details/${detailItemCode}/update-defectManage', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            [header]: token
         },
         body: JSON.stringify({
             detailItemCode: detailItemCode,

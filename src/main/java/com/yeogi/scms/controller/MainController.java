@@ -42,12 +42,14 @@ public class MainController {
     private final AccessLogService accessLogService;
 
     private EvidenceDataService evidenceDataService;
+
+    private final AuthenticationService authenticationService;
     private final Path root = Paths.get("uploads");
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
                           DefectManageService defectManageService, OperationalStatusService operationalStatusService,
-                          LoginAccountService loginAccountService, AccessLogService accessLogService) {
+                          LoginAccountService loginAccountService, AccessLogService accessLogService, AuthenticationService authenticationService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
         this.certifContentService = certifContentService;
@@ -56,7 +58,7 @@ public class MainController {
         this.evidenceDataService = evidenceDataService;
         this.loginAccountService = loginAccountService;
         this.accessLogService = accessLogService;
-
+        this.authenticationService = authenticationService;
     }
 
     private void addNicknameToModel(Model model, CustomUserDetails user) {
@@ -78,17 +80,30 @@ public class MainController {
         return "login";
     }
 
+    @PostMapping("/verify-password")
+    @ResponseBody
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request, @AuthenticationPrincipal CustomUserDetails user) {
+        String password = request.get("password");
+
+        boolean isPasswordValid = authenticationService.verifyPassword(user.getUsername(), password);
+        if (isPasswordValid) {
+            return ResponseEntity.ok("Password verified successfully");
+        } else {
+            return ResponseEntity.status(401).body("Invalid password");
+        }
+    }
+
     @GetMapping("/manage-system")
     public String showManageSystem(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
         // (1) SCMasterService.getFilteredSCMaster("MANAGE") 호출
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("MANAGE");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("MANAGE");
 
-        // (2) 각 SCMaster의 documentCode로 CertifDetailService.getFilteredCertifDetail(documentCode) 호출
+        // (2) 각 SCMaster의 documentCode에 맵핑되는 CertifDetail만 가져옴
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         // 모델에 추가
@@ -102,12 +117,12 @@ public class MainController {
     public String showProtectMeasures(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
 
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PROTECT");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("PROTECT");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         model.addAttribute("scmMasters", scmMasters);
@@ -119,12 +134,12 @@ public class MainController {
     @GetMapping("/privacy-require")
     public String showPrivacyRequire(Model model, @AuthenticationPrincipal CustomUserDetails user) {
         addNicknameToModel(model, user);
-        List<SCMaster> scmMasters = scmMasterService.getFilteredSCMaster("PRIVACY");
+        List<SCMaster> scmMasters = scmMasterService.getSCMasterBySCCode("PRIVACY");
 
         Map<String, List<CertifDetail>> certifDetailsMap = scmMasters.stream()
                 .collect(Collectors.toMap(
                         SCMaster::getDocumentCode,
-                        master -> certifDetailService.getFilteredCertifDetail(master.getDocumentCode())
+                        master -> certifDetailService.getCertifDetailByDoccode(master.getDocumentCode())
                 ));
 
         model.addAttribute("scmMasters", scmMasters);
@@ -209,9 +224,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-completion-status")
-    public ResponseEntity<?> updateCompletionStatus(@RequestBody Map<String, Object> payload) {
-        String detailItemCode = (String) payload.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-completion-status")
+    public ResponseEntity<?> updateCompletionStatus(@PathVariable String detailItemCode, @RequestBody Map<String, Object> payload) {
+        detailItemCode = (String) payload.get("detailItemCode");
         Boolean completed = (Boolean) payload.get("completed");
 
         System.out.println("Received request to update completion status: detailItemCode=" + detailItemCode + "completed=" + completed);
@@ -225,9 +240,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-certifContent")
-    public ResponseEntity<?> saveCertifContent(@RequestBody Map<String, String> certifContent) {
-        String detailItemCode = certifContent.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-certifContent")
+    public ResponseEntity<?> saveCertifContent(@PathVariable String detailItemCode, @RequestBody Map<String, String> certifContent) {
+        detailItemCode = certifContent.get("detailItemCode");
         String certificationCriteria = certifContent.get("certificationCriteria");
         String keyCheckpoints = certifContent.get("keyCheckpoints");
         String relevantLaws = certifContent.get("relevantLaws");
@@ -242,9 +257,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-operationalStatus")
-    public ResponseEntity<?> saveOperationalStatus(@RequestBody Map<String, String> operationalStatus) {
-        String detailItemCode = operationalStatus.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-operationalStatus")
+    public ResponseEntity<?> saveOperationalStatus(@PathVariable String detailItemCode, @RequestBody Map<String, String> operationalStatus) {
+        detailItemCode = operationalStatus.get("detailItemCode");
         String status = operationalStatus.get("status");
         String relatedDocument = operationalStatus.get("relatedDocument");
         String evidenceName = operationalStatus.get("evidenceName");
@@ -259,9 +274,9 @@ public class MainController {
         }
     }
 
-    @PostMapping("/update-defectManage")
-    public ResponseEntity<?> saveDefectManage(@RequestBody Map<String, String> defectManage) {
-        String detailItemCode = defectManage.get("detailItemCode");
+    @PostMapping("/save-details/{detailItemCode}/update-defectManage")
+    public ResponseEntity<?> saveDefectManage(@PathVariable String detailItemCode, @RequestBody Map<String, String> defectManage) {
+        detailItemCode = defectManage.get("detailItemCode");
         String certificationType = defectManage.get("certificationType");
         String defectContent = defectManage.get("defectContent");
         String modifier = defectManage.get("modifier");
@@ -299,7 +314,7 @@ public class MainController {
             evidenceData.setFileSize(fileSize);
             evidenceData.setFilePath(filePath.toString());
             evidenceData.setCreator(creator);
-            evidenceDataService.saveEvidenceData(evidenceData);
+            //evidenceDataService.saveEvidenceData(evidenceData);
 
             return ResponseEntity.ok("File uploaded successfully");
         } catch (Exception e) {

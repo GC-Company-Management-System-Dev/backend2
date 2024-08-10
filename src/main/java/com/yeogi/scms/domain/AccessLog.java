@@ -1,5 +1,6 @@
 package com.yeogi.scms.domain;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class AccessLog {
@@ -7,7 +8,7 @@ public class AccessLog {
     private String accessId;  // Access_ID 열에 대응
     private String action;    // Action 열에 대응
     private String accessPath; // Access_Path 열에 대응
-    private LocalDateTime timestamp; // Timestamp 열에 대응
+    private Timestamp timestamp; // Timestamp 열에 대응
 
     // 기본 생성자
     public AccessLog() {}
@@ -45,11 +46,11 @@ public class AccessLog {
         this.accessPath = accessPath;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 }

@@ -35,4 +35,20 @@ public class CertifContentRepository {
 
         jdbcTemplate.update(sql, certificationCriteria, keyCheckpoints, relevantLaws, modifier, detailItemCode);
     }
+
+    public void saveAll(List<CertifContent> contents) {
+        String sql = "INSERT INTO Certification_Item_Content " +
+                "(Detail_Item_Code, Certification_Criteria, Key_Checkpoints, Relevant_Laws, Modifier, Updated_At) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, contents, contents.size(), (ps, content) -> {
+            ps.setString(1, content.getDetailItemCode());
+            ps.setString(2, content.getCertificationCriteria());
+            ps.setString(3, content.getKeyCheckpoints());
+            ps.setString(4, content.getRelevantLaws());
+            ps.setString(5, content.getModifier());
+            ps.setTimestamp(6, content.getUpdatedAt());
+        });
+    }
+
 }

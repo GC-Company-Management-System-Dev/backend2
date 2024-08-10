@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", function() {
     var editButtons = document.querySelectorAll('.edit-btn');
     var saveButtons = document.querySelectorAll('.save-btn');
 
+    var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
     editButtons.forEach(function(button) {
         button.addEventListener('click', function() {
             var documentCode = button.getAttribute('data-doc-code');
@@ -40,10 +43,11 @@ document.addEventListener("DOMContentLoaded", function() {
             var isoDetails = isoDetailsTextarea.value;
             var pciDssDetails = pciDssDetailsTextarea.value;
 
-            fetch('/save-details/' + documentCode, { // 경로에 documentCode 추가
+            fetch('/save-details/' + documentCode, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    [header]: token // CSRF 토큰 추가
                 },
                 body: JSON.stringify({
                     documentCode: documentCode,
