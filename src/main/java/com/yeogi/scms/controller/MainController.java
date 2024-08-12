@@ -66,12 +66,6 @@ public class MainController {
         model.addAttribute("nickname", nickname);
     }
 
-    @GetMapping("/")
-    public String main(Model model, @AuthenticationPrincipal CustomUserDetails user) {
-        addNicknameToModel(model, user);
-        return "main";
-    }
-
     @GetMapping("/login")
     public String loginForm(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) {

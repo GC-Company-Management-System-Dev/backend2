@@ -59,4 +59,30 @@ public class MonthlyIndexInfoRepository {
                 monthlyIndexInfo.getDecem()
         );
     }
+
+    // 특정 인증 년도의 MonthlyIndexInfo를 가져오는 메서드
+    public List<MonthlyIndexInfo> findByCertificationYear(int certificationYear) {
+        String sql = "SELECT * FROM Monthly_Index_Info WHERE Certification_Year = ?";
+        return jdbcTemplate.query(sql, new Object[]{certificationYear}, new RowMapper<MonthlyIndexInfo>() {
+            @Override
+            public MonthlyIndexInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MonthlyIndexInfo info = new MonthlyIndexInfo();
+                info.setCertificationYear(rs.getInt("Certification_Year"));
+                info.setJan(rs.getInt("Jan"));
+                info.setFeb(rs.getInt("Feb"));
+                info.setMar(rs.getInt("Mar"));
+                info.setApr(rs.getInt("Apr"));
+                info.setMay(rs.getInt("May"));
+                info.setJun(rs.getInt("Jun"));
+                info.setJul(rs.getInt("Jul"));
+                info.setAug(rs.getInt("Aug"));
+                info.setSep(rs.getInt("Sep"));
+                info.setOct(rs.getInt("Oct"));
+                info.setNov(rs.getInt("Nov"));
+                info.setDecem(rs.getInt("Decem"));
+                info.setCreatedAt(rs.getTimestamp("Created_At"));
+                return info;
+            }
+        });
+    }
 }
