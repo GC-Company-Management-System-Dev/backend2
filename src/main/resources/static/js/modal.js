@@ -108,6 +108,14 @@ function openModal(modalId, buttonId) {
         // 수정일과 수정자 설정
         document.getElementById("modificationDate4").value = modificationDate;
         document.getElementById("modifier4").value = modifier;
+    } else if (modalId === 'editModal-proof') {
+        // var detailItemCode = button.getAttribute("data-detail-item-code") || "";
+        // var modificationDate = button.getAttribute("data-modification-date") || "N/A";
+        // var modifier = button.getAttribute("data-modifier") || "N/A";
+        //
+        // document.getElementById("detailItemCode").value = detailItemCode;
+        // document.getElementById("modificationDate3").value = modificationDate;
+        // document.getElementById("modifier3").value = modifier;
     }
 
     modal.style.display = "block";

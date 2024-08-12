@@ -1,36 +1,36 @@
 package com.yeogi.scms.controller;
 
+import com.google.api.Authentication;
+import com.google.firebase.remoteconfig.User;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.File;
 import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.UUID;
 
-
+@Slf4j
 @Controller
+@RequiredArgsConstructor
 public class MainController {
 
     private final CertifContentService certifContentService;
@@ -41,10 +41,13 @@ public class MainController {
     private final LoginAccountService loginAccountService;
     private final AccessLogService accessLogService;
 
+    @Autowired
     private EvidenceDataService evidenceDataService;
 
     private final AuthenticationService authenticationService;
     private final Path root = Paths.get("uploads");
+
+    private Log logger;
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
@@ -147,6 +150,7 @@ public class MainController {
 
         return "privacyRequire";
     }
+
     @GetMapping("/manage-system/{detailItemCode}")
     public String showManageSystemDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
         return showDetail(detailItemCode, "manage-system", model, user);
@@ -296,37 +300,143 @@ public class MainController {
     }
 
 
+
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
-                                             @RequestParam("detailItemCode") String detailItemCode,
-                                             @RequestParam("creator") String creator) {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+                                   @RequestParam("detailItemCode") String detailItemCode,
+                                   RedirectAttributes redirectAttributes) {
+
         try {
-            UUID fileKey = UUID.randomUUID();
-            String fileName = file.getOriginalFilename();
-            double fileSize = file.getSize();
-            Path filePath = this.root.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath);
-
-            EvidenceData evidenceData = new EvidenceData();
-            evidenceData.setFileKey(fileKey);
-            evidenceData.setDetailItemCode(detailItemCode);
-            evidenceData.setFileName(fileName);
-            evidenceData.setFileSize(fileSize);
-            evidenceData.setFilePath(filePath.toString());
-            evidenceData.setCreator(creator);
-            //evidenceDataService.saveEvidenceData(evidenceData);
-
-            return ResponseEntity.ok("File uploaded successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to upload file");
+            String fileName = evidenceDataService.uploadFile(file, detailItemCode);
+            redirectAttributes.addFlashAttribute("message", "File uploaded successfully: " + fileName);
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("message", "Failed to upload file.");
         }
+
+        return "redirect:/";
     }
 
-    @GetMapping("/files/{detailItemCode}")
-    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
-        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
-    }
+//    @PostMapping("/upload")
+//    public EvidenceData uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("detailItemCode") String detailItemCode) throws IOException {
+//        String filePath = evidenceDataService.uploadFile(file);
+//        EvidenceData evidenceData = new EvidenceData();
+//        evidenceData.setFileKey(UUID.randomUUID());
+//        evidenceData.setDetailItemCode(detailItemCode);
+//        evidenceData.setFileName(file.getOriginalFilename());
+//        evidenceData.setFileSize(file.getSize());
+//        evidenceData.setFilePath(filePath);
+//        //evidenceData.setCreator("YourCreatorName"); // 실제로는 현재 사용자 이름을 가져오도록 설정
+//
+//        // DB에 저장하는 로직 추가
+//        // evidenceDataRepository.save(evidenceData);
+//
+//        return evidenceData;
+//    }
 
-
+//    @DeleteMapping("/delete")
+//    public void deleteFile(@RequestParam("filePath") String filePath, @RequestParam("fileKey") String fileKey) {
+//        evidenceDataService.deleteFile(filePath);
+//
+//        // DB에서 삭제하는 로직 추가
+//        // evidenceDataRepository.deleteByFileKey(fileKey);
+//    }
 }
+
+
+//    @PostMapping("/upload")
+//    public String handleFileUpload(@RequestParam("detailItemCode") String detailItemCode,
+//                                   @RequestParam("file") MultipartFile file,
+//                                   Model model) {
+//
+//        if (file.isEmpty()) {
+//            System.out.println("파일 업로드 실패: 빈 파일이 업로드 되었습니다.");
+//            model.addAttribute("message", "파일을 선택해주세요.");
+//            return "redirect:/";
+//        }
+//
+//        try {
+//            // 파일 저장 로직
+//            String originalFilename = file.getOriginalFilename();
+//            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+//            String storedFilename = UUID.randomUUID().toString() + fileExtension;
+//            String filePath = uploadDir + storedFilename;
+//
+//            File destFile = new File(filePath);
+//            file.transferTo(destFile);
+//
+//            // DB에 파일 정보 저장
+//            EvidenceData evidenceData = new EvidenceData();
+//            evidenceData.setFileKey(UUID.randomUUID());
+//            evidenceData.setDetailItemCode(detailItemCode);
+//            evidenceData.setFileName(originalFilename);
+//            evidenceData.setFileSize(file.getSize());
+//            evidenceData.setFilePath(filePath);
+//            evidenceData.setCreatedAt(LocalDateTime.now());
+//            evidenceData.setCreator("your_username"); // 실제 사용자 정보로 변경
+//
+//            evidenceDataService.saveEvidenceData(evidenceData);
+//
+//            System.out.println("파일 업로드 성공: {} (크기: {} bytes)" + originalFilename + file.getSize());
+//
+//
+//        } catch (IOException e) {
+//            logger.error("파일 업로드 실패: 파일을 저장하는 동안 오류가 발생했습니다.", e);
+//            model.addAttribute("message", "파일 업로드에 실패했습니다.");
+//
+//        } catch (Exception e) {
+//            logger.error("파일 업로드 실패: 알 수 없는 오류가 발생했습니다.", e);
+//            model.addAttribute("message", "파일 업로드에 실패했습니다.");
+//        }
+//        return detailItemCode;
+//    }
+//}
+
+
+//
+//        // 파일 저장
+//        String fileName = file.getOriginalFilename();
+//        String filePath = Paths.get(uploadDir, UUID.randomUUID() + "_" + fileName).toString();
+//        File dest = new File(filePath);
+//        try {
+//            file.transferTo(dest);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(500).body("File upload failed");
+//        }
+
+//        // EvidenceData 객체 생성 및 DB에 저장
+//        EvidenceData evidenceData = new EvidenceData();
+//        evidenceData.setFileKey(UUID.randomUUID());
+//        evidenceData.setDetailItemCode(detailItemCode);
+//        evidenceData.setFileName(originalFilename);
+//        evidenceData.setFileSize(file.getSize());
+//        evidenceData.setFilePath(filePath);
+//        evidenceData.setCreatedAt(LocalDateTime.now());
+//        //evidenceData.setCreator(creator);
+//
+//        evidenceDataService.saveEvidenceData(evidenceData);
+//
+//        return ResponseEntity.ok("File uploaded successfully");
+//    }
+
+
+//    @GetMapping("/files/{detailItemCode}")
+//    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
+//        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+//    }
+//
+//    @GetMapping("/detail/{detailItemCode}")
+//    public ResponseEntity<List<EvidenceData>> getEvidenceDataByDetailItemCode(@PathVariable String detailItemCode) {
+//        List<EvidenceData> evidenceDataList = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+//        return ResponseEntity.ok(evidenceDataList);
+//    }
+//
+//    @DeleteMapping("/{fileKey}")
+//    public ResponseEntity<Void> deleteFile(@PathVariable UUID fileKey) {
+//        evidenceDataService.deleteEvidenceData(fileKey);
+//        return ResponseEntity.noContent().build();
+//    }
+
+
+
 
