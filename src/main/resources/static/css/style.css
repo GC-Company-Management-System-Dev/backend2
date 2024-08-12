@@ -1,15 +1,15 @@
 @import url("https://static.goodchoice.kr/static/ui/icon/iconPack.css");
 @import url("https://static.goodchoice.kr/fonts/jalnan/font.css");
 
-@font-face {
-  font-family: '나눔스퀘어_ac';
-  src: url('fonts/NanumSquareOTF_acR.otf') format('opentype');
-}
+/*@font-face {*/
+/*  font-family: '나눔스퀘어_ac';*/
+/*  src: url('fonts/NanumSquareOTF_acR.otf') format('opentype');*/
+/*}*/
 
-@font-face {
-  font-family: '나눔스퀘어_bold';
-  src: url('fonts/NanumSquareEB.otf') format('opentype');
-}
+/*@font-face {*/
+/*  font-family: '나눔스퀘어_bold';*/
+/*  src: url('fonts/NanumSquareEB.otf') format('opentype');*/
+/*}*/
 
 :root {
   --point-color: #E22D39;
@@ -17,7 +17,7 @@
 
 body {
   background-color:#f6f6f6;
-  font-family:'나눔스퀘어_ac' !important;
+
   color:rgba(0,0,0,0.87);
   line-height:1.5;
   overflow: hidden;
