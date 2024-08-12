@@ -109,6 +109,10 @@ function openModal(modalId, buttonId) {
         document.getElementById("modificationDate4").value = modificationDate;
         document.getElementById("modifier4").value = modifier;
     } else if (modalId === 'editModal-proof') {
+
+        const detailItemCode = document.getElementById("detailItemCode").value;
+        displayFiles(detailItemCode);  // 모달 열릴 때 파일 목록 갱신
+
         // var detailItemCode = button.getAttribute("data-detail-item-code") || "";
         // var modificationDate = button.getAttribute("data-modification-date") || "N/A";
         // var modifier = button.getAttribute("data-modifier") || "N/A";
@@ -121,24 +125,6 @@ function openModal(modalId, buttonId) {
     modal.style.display = "block";
 }
 
-
-// function setModalData(row, modalId) {
-//     if (modalId === 'editModal-defects') {
-//         var ismsP = row.getAttribute("data-isms-p");
-//         var iso27k = row.getAttribute("data-iso-27k");
-//         var pciDss = row.getAttribute("data-pci-dss");
-//         var modificationDate = row.getAttribute("data-modification-date");
-//         var modifier = row.getAttribute("data-modifier");
-//
-//         document.getElementById("certificationType").value = ismsP;
-//         document.getElementById("defectContent").value = iso27k;
-//         document.getElementById("pciDss").value = pciDss;
-//         document.getElementById("modificationDate4").value = modificationDate;
-//         document.getElementById("modifier4").value = modifier;
-//     }
-//
-//     document.getElementById(modalId).style.display = "block";
-// }
 
 // 모달 닫기 함수
 function closeModal(modalId) {

@@ -54,24 +54,6 @@ public class EvidenceDataRepository {
         jdbcTemplate.update(sql, fileName, fileSize, filePath, fileKey, creator, detailItemCode);
     }
 
-//    public void saveEvidenceData(EvidenceData evidenceData) {
-//        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Creator) " +
-//                "VALUES (?, ?, ?, ?, ?, ?)";
-//        jdbcTemplate.update(sql,
-//                evidenceData.getDetailItemCode(),
-//                evidenceData.getFileName(),
-//                evidenceData.getFileSize(),
-//                evidenceData.getFilePath(),
-//                evidenceData.getFileKey().toString(),
-//                evidenceData.getCreator());
-//    }
-
-//    public void save(EvidenceData evidenceData) {
-//        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator) VALUES (?, ?, ?, ?, ?, ?, ?)";
-//        jdbcTemplate.update(sql, evidenceData.getDetailItemCode(), evidenceData.getFileName(), evidenceData.getFileSize(),
-//                evidenceData.getFilePath(), evidenceData.getFileKey().toString(), evidenceData.getCreatedAt(), evidenceData.getCreator());
-//    }
-
     public void deleteByFileKey(UUID fileKey) {
         String sql = "DELETE FROM Evidence_Data WHERE File_Key = ?";
         jdbcTemplate.update(sql, fileKey.toString());
@@ -98,3 +80,21 @@ public class EvidenceDataRepository {
     }
 
 }
+
+//    public void saveEvidenceData(EvidenceData evidenceData) {
+//        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Creator) " +
+//                "VALUES (?, ?, ?, ?, ?, ?)";
+//        jdbcTemplate.update(sql,
+//                evidenceData.getDetailItemCode(),
+//                evidenceData.getFileName(),
+//                evidenceData.getFileSize(),
+//                evidenceData.getFilePath(),
+//                evidenceData.getFileKey().toString(),
+//                evidenceData.getCreator());
+//    }
+
+//    public void save(EvidenceData evidenceData) {
+//        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator) VALUES (?, ?, ?, ?, ?, ?, ?)";
+//        jdbcTemplate.update(sql, evidenceData.getDetailItemCode(), evidenceData.getFileName(), evidenceData.getFileSize(),
+//                evidenceData.getFilePath(), evidenceData.getFileKey().toString(), evidenceData.getCreatedAt(), evidenceData.getCreator());
+//    }

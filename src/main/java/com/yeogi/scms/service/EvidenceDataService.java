@@ -35,23 +35,6 @@ public class EvidenceDataService {
         return evidenceDataRepository.findByDetailCode(detailItemCode);
     }
 
-//    public String uploadFile(MultipartFile file) throws IOException {
-//        Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
-//        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-//        //Blob blob = bucket.create(fileName, file.getBytes(), file.getContentType());
-//        Blob blob = bucket.create(fileName, file.getInputStream(), file.getContentType());
-//
-//        return blob.getMediaLink(); // 파일 경로를 반환
-//    }
-//
-//    public void deleteFile(String filePath) {
-//        Bucket bucket = StorageClient.getInstance().bucket();
-//        Blob blob = bucket.get(filePath);
-//        if (blob != null) {
-//            blob.delete();
-//        }
-//    }
-
     private final String bucketName = "scms-1862c.appspot.com";
     private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
@@ -80,11 +63,6 @@ public class EvidenceDataService {
         evidenceDataRepository.saveEvidenceData(evidenceData);
 
         return fileName;
-
-//        String fileName = file.getOriginalFilename();
-//        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fileName).build();
-//        storage.create(blobInfo, file.getBytes());
-//        return fileName;
     }
 
     // 파일 업로드
