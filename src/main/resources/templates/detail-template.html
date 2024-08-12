@@ -170,7 +170,13 @@
             <div class="section" style="grid-column: 1; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
                 <div style="display: flex; align-items: center;">
                     <h2>증적자료</h2>
-                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof')">수정</button>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)">수정</button>
+<!--                            th:each="evidenceData : ${evidenceDatas}"-->
+<!--                            th:attr="data-detail-item-code=${evidenceData.detailItemCode},-->
+<!--                                data-modification-date=${evidenceData.createdAt},-->
+<!--                                data-modifier=${evidenceData.creator},-->
+<!--                                id='editButton-proof-' + ${evidenceData.sequence}"-->
+
                 </div>
                 <div id="proof-upload" style="height: 100%;">
 
@@ -187,7 +193,7 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal('editModal-proof')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">증적자료 업로드</h2>
-                    <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data">
+                    <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data" method="post" action="/upload" th:action="@{/upload}">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
@@ -210,7 +216,7 @@
                                                     <p class="message">Drag files to upload</p>
                                                 </div>
                                                 <label class="file-label" for="chooseFile">파일 선택</label>
-                                                <input class="file" id="chooseFile" type="file" multiple onchange="dropFile.handleFiles(this.files)">
+                                                <input type="file" class="file" id="chooseFile" name="file" multiple onchange="dropFile.handleFiles(this.files)">
                                             </div>
                                             <div id="files" class="files">
                                                 <div class="file">
@@ -226,8 +232,10 @@
                                 </td>
                             </tr>
                         </table>
-<!--                        <button type="submit" id="modal-button-proof" class="modal-button">등록하기</button>-->
-                        <button type="button" id="modal-button-proof" class="modal-button" onclick="uploadFile(dropFile)">등록하기</button>
+                        <button type="submit" id="modal-button-proof" class="modal-button" onclick="uploadFile(dropFile)">등록하기</button>
+<!--                        th:each="evidenceData : ${evidenceDatas}"-->
+<!--                        th:attr="data-detail-item-code=${evidenceData.detailItemCode}"-->
+                        <input type="hidden" name="detailItemCode" th:value="${detailItemCode}">
                     </form>
                 </div>
             </div>
@@ -332,4 +340,27 @@
 </main>
 <!--<div th:replace="fragments/footer :: footer"></div>-->
 </body>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdLTcjtlDsPCTtJ2vxszVHlVWgUvrz9Xs",
+        authDomain: "scms-1862c.firebaseapp.com",
+        projectId: "scms-1862c",
+        storageBucket: "scms-1862c.appspot.com",
+        messagingSenderId: "291919661509",
+        appId: "1:291919661509:web:7d48db6b3089fb908963ac",
+        measurementId: "G-0LVLEB0LE8"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+</script>
 </html>

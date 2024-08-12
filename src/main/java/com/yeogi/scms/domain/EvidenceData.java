@@ -1,9 +1,16 @@
 package com.yeogi.scms.domain;
 
+
+import lombok.Data;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
+@Data
 public class EvidenceData {
     private UUID fileKey;
     private String detailItemCode;
@@ -64,6 +71,11 @@ public class EvidenceData {
     }
 
     public String getCreator() {
+
+        // 현재 로그인한 사용자의 닉네임을 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+
         return creator;
     }
 
