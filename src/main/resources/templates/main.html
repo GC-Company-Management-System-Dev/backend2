@@ -8,27 +8,26 @@
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
   <script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
   <script src="/static/js/modal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
       // CSRF 토큰 설정
       var token = $("meta[name='_csrf']").attr("content");
       var header = $("meta[name='_csrf_header']").attr("content");
 
-      $(document).ajaxSend(function(e, xhr, options) {
+      $(document).ajaxSend(function (e, xhr, options) {
         xhr.setRequestHeader(header, token);
       });
 
       $(".search-button").hover(
-              function() {
-                // 마우스 오버 시
+              function () {
                 $(this).css({
                   "border-color": "white",
                   "color": "white",
                   "background-color": "red"
                 });
               },
-              function() {
-                // 마우스 아웃 시
+              function () {
                 $(this).css({
                   "border-color": "red",
                   "color": "red",
@@ -37,49 +36,55 @@
               }
       );
 
-      $("#datepicker").datepicker({
-        changeMonth: false, // 월 선택 비활성화
-        changeDay: false, // 일 선택 비활성화
-        changeYear: true, // 연도 선택 활성화
-        showButtonPanel: true, // 버튼 패널 표시
-        dateFormat: 'yy', // 연도 형식 설정
-        yearRange: "c-10:c+10", // 연도 범위 설정 (현재 연도 기준 -10년에서 +10년)
-        onClose: function(dateText, inst) {
-          var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
-          $(this).val(year);
-        },
-        beforeShow: function(input, inst) {
-          if ((datestr = $(this).val()).length > 0) {
-            year = datestr.substring(datestr.length - 4, datestr.length);
-            $(this).datepicker('option', 'defaultDate', new Date(year, 1, 1));
-            $(this).datepicker('setDate', new Date(year, 1, 1));
+      $(document).ready(function () {
+        var latestYear = [[${latestYear}]]; // 서버에서 전달된 최근 인증년도
+        $("#datepicker").val(latestYear); // 초기값 설정
+        updateGraphs(latestYear); // 페이지 로드 시 최신 연도 데이터 로드
+
+        $("#datepicker").datepicker({
+          changeMonth: false,
+          changeDay: false,
+          changeYear: true,
+          showButtonPanel: true,
+          dateFormat: 'yy',
+          yearRange: "c-10:c+10",
+          onClose: function (dateText, inst) {
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).val(year);
+            updateGraphs(year); // 연도 선택 시 그래프 업데이트
+          },
+          beforeShow: function (input, inst) {
+            if ((datestr = $(this).val()).length > 0) {
+              year = datestr.substring(datestr.length - 4, datestr.length);
+              $(this).datepicker('option', 'defaultDate', new Date(year, 1, 1));
+              $(this).datepicker('setDate', new Date(year, 1, 1));
+            }
+            $(this).datepicker('widget').addClass('hide-calendar');
+            $(".ui-datepicker-calendar").hide();
+            $(".ui-datepicker-month").hide();
           }
-          $(this).datepicker('widget').addClass('hide-calendar');
-          $(".ui-datepicker-calendar").hide();
-          $(".ui-datepicker-month").hide();
-        }
+        });
       });
 
       // Add custom style to hide calendar and month selector
       $("<style>")
               .prop("type", "text/css")
-              .html("\
-        .hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
+              .html(".hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
               .appendTo("head");
 
-      $("#search-button").click(function() {
+      $("#search-button").click(function () {
         $("#datepicker").datepicker("show");
       });
 
-      $("#reset-year-button").click(function() {
+      $("#reset-year-button").click(function () {
         $("#firstModal").css("display", "block");
       });
 
-      $(".close-main").click(function() {
+      $(".close-main").click(function () {
         $(".modal-main").css("display", "none");
       });
 
-      $("#firstModal .modal-button-main").click(function() {
+      $("#firstModal .modal-button-main").click(function () {
         var password = $("#firstModal .modal-input").val();
 
         $.ajax({
@@ -87,23 +92,214 @@
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify({ password: password }),
-          success: function(response) {
+          success: function (response) {
             $("#firstModal").css("display", "none");
             $("#secondModal").css("display", "block");
           },
-          error: function(xhr) {
+          error: function (xhr) {
             alert("비밀번호가 일치하지 않습니다.");
           }
         });
       });
 
-      $("#secondModal .proceed-button").click(function() {
+      $("#secondModal .proceed-button").click(function () {
         alert("잠시만 기다려주세요.");
         $(".modal-main").css("display", "none");
       });
 
-      $("#secondModal .cancel-button").click(function() {
+      $("#secondModal .cancel-button").click(function () {
         $(".modal-main").css("display", "none");
+      });
+    });
+
+    // 그래프 업데이트 함수
+    function updateGraphs(selectedYear) {
+      $.ajax({
+        url: '/updateGraphs',
+        method: 'GET',
+        data: {
+          year: selectedYear
+        },
+        success: function (response) {
+          // 도넛 그래프 업데이트
+          updateDonutCharts(response.manageCompleted, response.privacyCompleted, response.protectCompleted);
+
+          // 선 그래프 업데이트
+          updateLineGraph(response.monthlyIndexInfo, response.monthlyCompletedBySCCode);
+        },
+        error: function (error) {
+          console.log("Error fetching data:", error);
+        }
+      });
+    }
+
+    function updateDonutCharts(manageData, privacyData, protectData) {
+      // Manage 데이터 업데이트
+      document.getElementById("manageProgressCount").textContent = manageData.completedCount + '/' + manageData.totalCount;
+      document.getElementById("manageProgressLabel").textContent = manageData.percentage + '%';
+
+      // Privacy 데이터 업데이트
+      document.getElementById("privacyProgressCount").textContent = privacyData.completedCount + '/' + privacyData.totalCount;
+      document.getElementById("privacyProgressLabel").textContent = privacyData.percentage + '%';
+
+      // Protect 데이터 업데이트
+      document.getElementById("protectProgressCount").textContent = protectData.completedCount + '/' + protectData.totalCount;
+      document.getElementById("protectProgressLabel").textContent = protectData.percentage + '%';
+
+      // 도넛 그래프 데이터 설정
+      manageChart.data.datasets[0].data = [manageData.percentage, 100 - manageData.percentage];
+      manageChart.update();
+
+      privacyChart.data.datasets[0].data = [privacyData.percentage, 100 - privacyData.percentage];
+      privacyChart.update();
+
+      protectChart.data.datasets[0].data = [protectData.percentage, 100 - protectData.percentage];
+      protectChart.update();
+    }
+
+    function updateLineGraph(monthlyIndexInfo, monthlyCompletedBySCCode) {
+      const sortedLabels = [];
+      const sortedManageData = [];
+      const sortedPrivacyData = [];
+      const sortedProtectData = [];
+
+      // "certificationYear"와 "CreatedAt"을 제외한 키들을 정렬
+      const sortedIndexes = Object.keys(monthlyIndexInfo)
+              .filter(key => key !== 'certificationYear' && key !== 'createdAt')
+              .sort((a, b) => monthlyIndexInfo[a] - monthlyIndexInfo[b]);
+
+      sortedIndexes.forEach(month => {
+        sortedLabels.push(month); // 인덱스에 대응하는 월을 그대로 라벨로 사용
+        sortedManageData.push(monthlyCompletedBySCCode.MANAGE[monthlyIndexInfo[month]] || 0);
+        sortedPrivacyData.push(monthlyCompletedBySCCode.PRIVACY[monthlyIndexInfo[month]] || 0);
+        sortedProtectData.push(monthlyCompletedBySCCode.PROTECT[monthlyIndexInfo[month]] || 0);
+      });
+
+      // 라인 그래프 데이터 설정
+      monthlyProgressChart.data.labels = sortedLabels;
+      monthlyProgressChart.data.datasets[0].data = sortedManageData;
+      monthlyProgressChart.data.datasets[1].data = sortedPrivacyData;
+      monthlyProgressChart.data.datasets[2].data = sortedProtectData;
+      monthlyProgressChart.update();
+    }
+
+
+    // 도넛 그래프 초기화
+    var manageChart, privacyChart, protectChart, monthlyProgressChart;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      function createDoughnutChart(ctx, data, title) {
+        return new Chart(ctx, {
+          type: 'doughnut',
+          data: data,
+          options: {
+            cutout: 80,
+            plugins: {
+              title: {
+                display: true,
+                text: title,
+                font: {
+                  size: 16
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            },
+            animation: false
+          }
+        });
+      }
+
+      manageChart = createDoughnutChart(document.getElementById('manageChart').getContext('2d'), {
+        labels: ['진행율', '미진행율'],
+        datasets: [{
+          label: '관리체제 수립 및 운영',
+          data: [0, 100],  // 초기값 0%로 설정
+          backgroundColor: ['rgb(255, 99, 132)', 'rgb(141,138,138)'],
+          hoverOffset: 4,
+        }]
+      }, '관리체제 수립 및 운영');
+
+      privacyChart = createDoughnutChart(document.getElementById('privacyChart').getContext('2d'), {
+        labels: ['진행율', '미진행율'],
+        datasets: [{
+          label: '보호대책 요구사항',
+          data: [0, 100],  // 초기값 0%로 설정
+          backgroundColor: ['rgb(255, 205, 86)', 'rgb(141,138,138)'],
+          hoverOffset: 4
+        }]
+      }, '보호대책 요구사항');
+
+      protectChart = createDoughnutChart(document.getElementById('protectChart').getContext('2d'), {
+        labels: ['진행율', '미진행율'],
+        datasets: [{
+          label: '개인정보 처리단계별 요구사항',
+          data: [0, 100],  // 초기값 0%로 설정
+          backgroundColor: ['rgb(149,239,131)', 'rgb(141,138,138)'],
+          hoverOffset: 4
+        }]
+      }, '개인정보 처리단계별 요구사항');
+
+      const lineCtx = document.getElementById('monthlyProgressChart').getContext('2d');
+      const labels = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+      const lineData = {
+        labels: labels,
+        datasets: [{
+          label: '관리체계',
+          data: [],  // 초기값 빈 배열로 설정
+          fill: false,
+          borderColor: 'rgb(252,4,49)',
+          tension: 0.1
+        },
+          {
+            label: '보호대책',
+            data: [],  // 초기값 빈 배열로 설정
+            fill: false,
+            borderColor: 'rgb(255,218,75)',
+            tension: 0.1
+          },
+          {
+            label: '개인정보보호',
+            data: [],  // 초기값 빈 배열로 설정
+            fill: false,
+            borderColor: 'rgb(109,189,14)',
+            tension: 0.1
+          }]
+      };
+
+      monthlyProgressChart = new Chart(lineCtx, {
+        type: 'line',
+        data: lineData,
+        options: {
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 0,  // Y축 최소값
+              max: 101,  // Y축 최대값을 101로 설정
+              ticks: {
+                stepSize: 50,
+                callback: function (value) {
+                  return value === 0 || value === 50 || value === 100 ? value : '';
+                }
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '월간 인증 진척률 추이',
+              font: {
+                size: 24,
+              },
+              color: "red"
+            },
+            legend: {
+              display: false
+            }
+          },
+          animation: false
+        }
       });
     });
   </script>
@@ -126,42 +322,42 @@
     </div>
 
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 100%;">
-
       <!-- 첫 번째 도넛 그래프 -->
       <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
-        <canvas id="myChart1"></canvas>
+        <canvas id="manageChart"></canvas>
         <div class="progress-info">
           <div class="progress-title">진행현황</div>
-          <div class="progress-count">8/10</div>
-          <div class="progress-label">80%</div>
+          <div class="progress-count" id="manageProgressCount"></div> <!-- Manage Count ID -->
+          <div class="progress-label" id="manageProgressLabel"></div> <!-- Manage Label ID -->
         </div>
       </div>
 
       <!-- 두 번째 도넛 그래프 -->
       <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
-        <canvas id="myChart2"></canvas>
+        <canvas id="privacyChart"></canvas>
         <div class="progress-info">
           <div class="progress-title">진행현황</div>
-          <div class="progress-count">9/10</div>
-          <div class="progress-label">90%</div>
+          <div class="progress-count" id="privacyProgressCount"></div> <!-- Privacy Count ID -->
+          <div class="progress-label" id="privacyProgressLabel"></div> <!-- Privacy Label ID -->
         </div>
       </div>
 
       <!-- 세 번째 도넛 그래프 -->
       <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
-        <canvas id="myChart3"></canvas>
+        <canvas id="protectChart"></canvas>
         <div class="progress-info">
           <div class="progress-title">진행현황</div>
-          <div class="progress-count">7/10</div>
-          <div class="progress-label">72%</div>
+          <div class="progress-count" id="protectProgressCount"></div> <!-- Protect Count ID -->
+          <div class="progress-label" id="protectProgressLabel"></div> <!-- Protect Label ID -->
         </div>
-
       </div>
 
       <!-- 선 그래프 -->
       <div class="line-chart-container chart-container" style="flex-basis: 100%; margin-top: 50px;">
-        <canvas id="myLineChart"></canvas>
+        <canvas id="monthlyProgressChart"></canvas> <!-- Monthly Progress Chart ID -->
       </div>
+
+    </div>
 
       <!-- 첫 번째 모달 -->
       <div id="firstModal" class="modal-main">
@@ -240,197 +436,6 @@
 
 
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const circle_data1 = {
-          labels: [
-            '진행율',
-            '미진행율',
-          ],
-          datasets: [{
-            label: '관리체제 수립 및 운영',
-            data: [80, 20],
-            backgroundColor: [
-              'rgb(255, 99, 132)',
-              'rgb(141,138,138)',
-            ],
-            hoverOffset: 4,
-          }]
-        };
-
-        const circle_config1 = {
-          type: 'doughnut',
-          data: circle_data1,
-          options: {
-            cutout: 80,
-            plugins: {
-              title: {
-                display: true,
-                text: '관리체제 수립 및 운영',
-                font: {
-                  size: 16
-                }
-              },
-              legend: {
-                position: 'bottom'
-              }
-            },
-            animation: false
-          }
-        };
-
-        const circle_data2 = {
-          labels: [
-            '진행율',
-            '미진행율',
-          ],
-          datasets: [{
-            label: '보호대책 요구사항',
-            data: [90, 10],
-            backgroundColor: [
-              'rgb(255, 205, 86)',
-              'rgb(141,138,138)',
-            ],
-            hoverOffset: 4
-          }]
-        };
-
-        const circle_config2 = {
-          type: 'doughnut',
-          data: circle_data2,
-          options: {
-            cutout: 80,
-            plugins: {
-              title: {
-                display: true,
-                text: '보호대책 요구사항',
-                font: {
-                  size: 16
-                }
-              },
-              legend: {
-                position: 'bottom'
-              }
-            },
-            animation: false
-          }
-        };
-
-        const circle_data3 = {
-          labels: [
-            '진행율',
-            '미진행율',
-          ],
-          datasets: [{
-            label: '개인정보 처리단계별 요구사항',
-            data: [72, 28],
-            backgroundColor: [
-              'rgb(149,239,131)',
-              'rgb(141,138,138)',
-            ],
-            hoverOffset: 4
-          }]
-        };
-
-        const circle_config3 = {
-          type: 'doughnut',
-          data: circle_data3,
-          options: {
-            cutout: 80,
-            plugins: {
-              title: {
-                display: true,
-                text: '개인정보 처리단계별 요구사항',
-                font: {
-                  size: 16
-                }
-              },
-              legend: {
-                position: 'bottom'
-              }
-            },
-            animation: false
-          }
-        };
-
-        var ctx1 = document.getElementById('myChart1').getContext('2d');
-        new Chart(ctx1, circle_config1);
-
-        var ctx2 = document.getElementById('myChart2').getContext('2d');
-        new Chart(ctx2, circle_config2);
-
-        var ctx3 = document.getElementById('myChart3').getContext('2d');
-        new Chart(ctx3, circle_config3);
-
-        const labels = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-        const line_data1 = {
-          labels: labels,
-          datasets: [{
-            label: '관리체계',
-            data: [23, 32, 39, 44, 50, 55, 57, 59, 60, 66, 70, 72],
-            fill: false,
-            borderColor: 'rgb(252,4,49)',
-            tension: 0.1
-          },
-            {
-              label: '보호대책',
-              data: [20, 30, 30, 40, 50, 60, 65, 70, 75, 80, 85, 90],
-              fill: false,
-              borderColor: 'rgb(255,218,75)',
-              tension: 0.1
-            },
-            {
-              label: '개인정보보호',
-              data: [0, 14, 28, 32, 38, 42, 50, 54, 64, 74, 89, 95],
-              fill: false,
-              borderColor: 'rgb(109,189,14)',
-              tension: 0.1
-            },
-          ]
-        };
-
-        const line_config1 = {
-          type: 'line',
-          data: line_data1,
-          options: {
-            maintainAspectRatio: false, // 세로 길이 유지 X
-            scales: {
-              y: {
-                ticks: {
-                  suggestedMin: 0, // Set the minimum value
-                  suggestedMax: 100, // Set the maximum value
-                  stepSize: 50, // Set the interval between ticks
-                  callback: function(value, index, values) {
-                    return value === 0 || value === 50 || value === 100 ? value : '';
-                  }
-                }
-              }
-            },
-            plugins: {
-              title: {
-                display: true,
-                text: '월간 인증 진척률 추이',
-                font: {
-                  size: 24,
-                },
-                color: "red"
-              },
-              legend: {
-                display: false
-              }
-            },
-            animation: false
-          }
-        };
-
-        var line_ctx1 = document.getElementById('myLineChart').getContext('2d');
-        new Chart(line_ctx1, line_config1);
-      });
-    </script>
-
-  </div>
 </main>
 </body>
 </html>

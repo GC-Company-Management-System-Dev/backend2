@@ -50,5 +50,18 @@ public class SCMasterService {
         return List.of();
     }
 
+    //가장 최근 인증년도를 반환하는 메서드
+    public int getLatestCertificationYear() {
+        List<SCMaster> allRecords = repository.findAll();
+        Optional<SCMaster> latestRecordOpt = allRecords.stream()
+                .max((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
+
+        if (latestRecordOpt.isPresent()) {
+            return latestRecordOpt.get().getCertificationYear();
+        } else {
+            throw new RuntimeException("No certification data available.");
+        }
+    }
+
 
 }
