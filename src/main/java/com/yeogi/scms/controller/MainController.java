@@ -1,6 +1,10 @@
 package com.yeogi.scms.controller;
 
 import com.google.api.Authentication;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.firebase.remoteconfig.User;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
@@ -8,6 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -314,6 +323,35 @@ public class MainController {
 
         return "redirect:/";
     }
+
+    private final String bucketName = "scms-1862c.appspot.com";
+    private final Storage storage = StorageOptions.getDefaultInstance().getService();
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
+                                                 @RequestParam("detailItemCode") String detailItemCode) {
+        try {
+            String folderPath = detailItemCode + "/" + fileName;
+            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
+
+            if (blob == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(blob.getSize())
+                    .contentType(MediaType.parseMediaType(blob.getContentType()))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
 
 
