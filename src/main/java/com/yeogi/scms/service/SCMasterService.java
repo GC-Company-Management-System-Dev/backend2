@@ -21,18 +21,28 @@ public class SCMasterService {
         this.repository = repository;
     }
 
-    public List<SCMaster> getFilteredSCMaster(String sccode) {
+    public List<SCMaster> getSCMasterBySCCode(String sccode) {
         List<SCMaster> allRecords = repository.findBySCCode(sccode);
+        return getByLatestYear(allRecords);
+    }
 
-        // 최신 생성일을 가진 행의 인증년도를 찾음
-        Optional<SCMaster> latestRecordOpt = allRecords.stream()
+    public boolean saveDetailsToDB(String documentCode, String isoDetails, String pciDssDetails) {
+        try {
+            repository.updateDetails(documentCode, isoDetails, pciDssDetails);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<SCMaster> getByLatestYear(List<SCMaster> records) {
+        Optional<SCMaster> latestRecordOpt = records.stream()
                 .max((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
 
         if (latestRecordOpt.isPresent()) {
             int latestCertificationYear = latestRecordOpt.get().getCertificationYear();
-
-            // 해당 인증년도와 같은 행만 필터링
-            return allRecords.stream()
+            return records.stream()
                     .filter(record -> record.getCertificationYear() == latestCertificationYear)
                     .collect(Collectors.toList());
         }

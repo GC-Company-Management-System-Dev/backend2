@@ -3,94 +3,21 @@
 <head>
   <title>메인 페이지</title>
   <th:block th:replace="fragments/head :: common-head"></th:block>
-  <style>
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-    }
-
-    #datepicker-container {
-      display: flex;
-      margin-top: 0px;
-      height: 25px;
-      margin-left: 60%;
-    }
-
-    #datepicker {
-      margin-right: 10px; /* Datepicker 오른쪽 여백 설정 */
-      height: 25px;
-    }
-
-    .search-button { /*우측 상단 날짜 검색 버튼*/
-      height: 25px;
-      border: 1px solid red;
-      background-color: transparent;
-      color: red;
-      padding: 0 12px;
-      cursor: pointer;
-      text-align: center;
-      border-radius: 5px; /* 모서리를 10픽셀만큼 둥글게 설정 */
-    }
-
-    .chart-container {
-      width: 350px; /* 원하는 가로 크기 */
-      height: 350px; /* 세로 크기 */
-      align-items: center;
-      justify-content: center; /* 가로로 가운데 정렬 */
-      padding: 0 40px;
-      margin-top: 20px; /* 추가된 차트와 "Dash Board" 사이의 간격 조정 */
-      text-align: center; /* 그래프 아래에 텍스트 중앙 정렬 */
-    }
-
-    .progress-info {
-      width: 200px;
-      height: 40px;
-      align-items: center;
-      justify-content: center; /* 가로로 가운데 정렬 */
-      display: flex;
-      margin: 0 auto; /* 가운데 정렬을 위한 margin 설정 */
-      margin-bottom: 5px;
-      background-color: rgba(255, 0, 0, 0.1);
-      padding: 5px;
-      border-radius: 5px;
-    }
-
-
-    .progress-title {
-      font-size: 14px;
-      color: white; /* 글자색 설정 */
-      background-color: red; /* 배경색 설정 */
-      padding: 5px; /* 내부 여백 설정 */
-      border-radius: 5px; /* 모서리 둥글게 설정 */
-      margin-right: 20px; /* 오른쪽 여백 설정 */
-    }
-
-    .progress-label, .progress-count {
-      font-size: 14px; /* 글자 크기 설정 */
-      margin-right: 20px; /* 아이템 간 간격 조정 */
-    }
-
-    .line-chart-container {
-      text-align: center; /* 가로 방향 가운데 정렬 */
-      display: flex; /* 세로 중앙 정렬을 위해 flex 설정 추가 */
-      align-items: center; /* 세로 중앙 정렬 */
-    }
-
-    .progress-label {
-      color: red; /* 진행도 글자색을 빨간색으로 설정 */
-    }
-
-    .progress-count {
-      color: blue; /* 수행한 항목 글자색을 파란색으로 설정 */
-    }
-  </style>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
   <script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
+  <script src="/static/js/modal.js"></script>
   <script>
-    $(function() {
+    $(document).ready(function() {
+      // CSRF 토큰 설정
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
+
+      $(document).ajaxSend(function(e, xhr, options) {
+        xhr.setRequestHeader(header, token);
+      });
+
       $(".search-button").hover(
               function() {
                 // 마우스 오버 시
@@ -109,19 +36,78 @@
                 });
               }
       );
-    });
 
+      $("#datepicker").datepicker({
+        changeMonth: false, // 월 선택 비활성화
+        changeDay: false, // 일 선택 비활성화
+        changeYear: true, // 연도 선택 활성화
+        showButtonPanel: true, // 버튼 패널 표시
+        dateFormat: 'yy', // 연도 형식 설정
+        yearRange: "c-10:c+10", // 연도 범위 설정 (현재 연도 기준 -10년에서 +10년)
+        onClose: function(dateText, inst) {
+          var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+          $(this).val(year);
+        },
+        beforeShow: function(input, inst) {
+          if ((datestr = $(this).val()).length > 0) {
+            year = datestr.substring(datestr.length - 4, datestr.length);
+            $(this).datepicker('option', 'defaultDate', new Date(year, 1, 1));
+            $(this).datepicker('setDate', new Date(year, 1, 1));
+          }
+          $(this).datepicker('widget').addClass('hide-calendar');
+          $(".ui-datepicker-calendar").hide();
+          $(".ui-datepicker-month").hide();
+        }
+      });
 
-    $(function () {
-      $("#datepicker").datepicker();
-    });
+      // Add custom style to hide calendar and month selector
+      $("<style>")
+              .prop("type", "text/css")
+              .html("\
+        .hide-calendar .ui-datepicker-calendar, .hide-calendar .ui-datepicker-month { display: none !important; }")
+              .appendTo("head");
 
-    $(function () {
-      $(".search-button").click(function () {
+      $("#search-button").click(function() {
         $("#datepicker").datepicker("show");
+      });
+
+      $("#reset-year-button").click(function() {
+        $("#firstModal").css("display", "block");
+      });
+
+      $(".close-main").click(function() {
+        $(".modal-main").css("display", "none");
+      });
+
+      $("#firstModal .modal-button-main").click(function() {
+        var password = $("#firstModal .modal-input").val();
+
+        $.ajax({
+          url: "/verify-password",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ password: password }),
+          success: function(response) {
+            $("#firstModal").css("display", "none");
+            $("#secondModal").css("display", "block");
+          },
+          error: function(xhr) {
+            alert("비밀번호가 일치하지 않습니다.");
+          }
+        });
+      });
+
+      $("#secondModal .proceed-button").click(function() {
+        alert("잠시만 기다려주세요.");
+        $(".modal-main").css("display", "none");
+      });
+
+      $("#secondModal .cancel-button").click(function() {
+        $(".modal-main").css("display", "none");
       });
     });
   </script>
+
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
@@ -133,9 +119,10 @@
       <h1 style="color: red; font-size: 24px; justify-content: center; align-items: center;">Dash Board</h1>
     </div>
     <div id="datepicker-container">
+      <button id="reset-year-button" class="search-button" type="button" style="justify-content: flex-start; text-align: left; margin-right: 700px">인증년도 초기화</button>
       <i class="fas fa-calendar-alt" style="margin-right: 5px; width: 23px; height: 23px;"></i>
       <input type="text" id="datepicker">
-      <button class="search-button" type="button">검색</button>
+      <button id="search-button" class="search-button" type="button">검색</button>
     </div>
 
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 100%;">
@@ -175,6 +162,81 @@
       <div class="line-chart-container chart-container" style="flex-basis: 100%; margin-top: 50px;">
         <canvas id="myLineChart"></canvas>
       </div>
+
+      <!-- 첫 번째 모달 -->
+      <div id="firstModal" class="modal-main">
+        <div class="modal-content-main">
+          <span class="close-main">&times;</span>
+          <div class="modal-title-main">본인 확인</div>
+          <div class="input-title">로그인 비밀번호</div>
+          <input type="password" class="modal-input" placeholder="로그인 비밀번호 입력">
+          <button class="modal-button-main">진행하기</button>
+        </div>
+      </div>
+
+      <!-- 두 번째 모달 -->
+      <div id="secondModal" class="modal-main">
+        <div class="modal-content-main">
+          <span class="close-main">&times;</span>
+          <div class="modal-title-main">
+            다음 단계 진행 시 지금까지 작성하신 <span class="warning-text">인증 현황 및 증적이 초기화</span>되며, <br> 기준년도가 <span class="warning-text">다음 인증년도로 변경</span>되게 됩니다.<br> 그래도 초기화 하시겠습니까?
+          </div>
+          <div class="modal-checkbox-label" style="text-align: center; justify-content: center;">
+            <input type="checkbox" id="confirm-reset" style="margin-right: 10px;">
+            <label for="confirm-reset">네. 초기화 하겠습니다.</label>
+          </div>
+          <div class="modal-footer">
+            <button class="proceed-button" id="proceed-button" disabled>진행하기</button>
+            <button class="cancel-button">취소하기</button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          var checkbox = document.getElementById('confirm-reset');
+          var proceedButton = document.getElementById('proceed-button');
+
+          checkbox.addEventListener('change', function () {
+            proceedButton.disabled = !checkbox.checked;
+          });
+
+          document.getElementById('proceed-button').addEventListener('click', function() {
+            // 진행하기 버튼 클릭 시 AJAX 요청 전송
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            fetch('/api/initializeData', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                [header]: token
+              }
+            })
+                    .then(response => {
+                      if (response.ok) {
+                        alert('데이터 초기화가 성공적으로 완료되었습니다.');
+                        // 필요에 따라 페이지를 리로드하거나 모달을 닫는 동작 추가
+                        document.getElementById('secondModal').style.display = 'none';
+                      } else {
+                        alert('데이터 초기화 중 오류가 발생했습니다.');
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Error:', error);
+                      alert('데이터 초기화 중 오류가 발생했습니다.');
+                    });
+          });
+
+          document.querySelector('.cancel-button').addEventListener('click', function() {
+            document.getElementById('secondModal').style.display = 'none';
+          });
+
+          document.querySelector('.close-main').addEventListener('click', function() {
+            document.getElementById('secondModal').style.display = 'none';
+          });
+        });
+      </script>
 
 
     </div>

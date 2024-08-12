@@ -1,5 +1,6 @@
 package com.yeogi.scms.domain;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class BaseEntity {
@@ -7,8 +8,8 @@ public class BaseEntity {
     private String classificationCode;
     private int certificationYear;
     private String itemCode;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     // Getters and setters
 
@@ -44,19 +45,19 @@ public class BaseEntity {
         this.itemCode = itemCode;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
 }
