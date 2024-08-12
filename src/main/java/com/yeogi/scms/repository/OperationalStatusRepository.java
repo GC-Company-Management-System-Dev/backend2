@@ -33,4 +33,20 @@ public class OperationalStatusRepository {
 
         jdbcTemplate.update(sql, status, relatedDocument, evidenceName, modifier, detailItemCode);
     }
+
+    // saveAll 메서드 추가
+    public void saveAll(List<OperationalStatus> statuses) {
+        String sql = "INSERT INTO Operational_Status " +
+                "(Detail_Item_Code, Status, Related_Document, Evidence_Name, Modifier, Updated_At) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, statuses, statuses.size(), (ps, status) -> {
+            ps.setString(1, status.getDetailItemCode());
+            ps.setString(2, status.getStatus());
+            ps.setString(3, status.getRelatedDocument());
+            ps.setString(4, status.getEvidenceName());
+            ps.setString(5, status.getModifier());
+            ps.setTimestamp(6, status.getUpdatedAt());
+        });
+    }
 }

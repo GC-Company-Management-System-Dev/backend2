@@ -61,4 +61,23 @@ public class CertifDetailRepository {
         String sql = "UPDATE Certification_Detail_Item SET Monthly_Index = NULL WHERE Detail_Item_Code = ?";
         return jdbcTemplate.update(sql, detailItemCode);
     }
+
+    public void saveAll(List<CertifDetail> details) {
+        String sql = "INSERT INTO Certification_Detail_Item " +
+                "(Document_Code, Detail_Item_Code, Classification_Code, Certification_Year, Item_Code, " +
+                "Detail_Item_Type_Name, Completed, Monthly_Index, Updated_At) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)";
+
+        jdbcTemplate.batchUpdate(sql, details, details.size(), (ps, detail) -> {
+            ps.setString(1, detail.getDocumentCode());
+            ps.setString(2, detail.getDetailItemCode());
+            ps.setString(3, detail.getClassificationCode());
+            ps.setInt(4, detail.getCertificationYear());
+            ps.setString(5, detail.getItemCode());
+            ps.setString(6, detail.getDetailItemTypeName());
+            ps.setBoolean(7, detail.isCompleted());
+            ps.setTimestamp(8, detail.getUpdatedAt());
+        });
+    }
+
 }

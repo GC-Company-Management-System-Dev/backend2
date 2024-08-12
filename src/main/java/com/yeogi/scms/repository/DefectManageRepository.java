@@ -58,5 +58,20 @@ public class DefectManageRepository {
         }
     }
 
+    // saveAll 메서드 추가
+    public void saveAll(List<DefectManage> defects) {
+        String sql = "INSERT INTO Defect_Management " +
+                "(Detail_Item_Code, ISMS_P, ISO27K, PCI_DSS, Modifier, Updated_At) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, defects, defects.size(), (ps, defect) -> {
+            ps.setString(1, defect.getDetailItemCode());
+            ps.setString(2, defect.getIsmsP());
+            ps.setString(3, defect.getIso27k());
+            ps.setString(4, defect.getPciDss());
+            ps.setString(5, defect.getModifier());
+            ps.setTimestamp(6, defect.getUpdatedAt());
+        });
+    }
 
 }

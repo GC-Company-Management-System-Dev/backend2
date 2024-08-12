@@ -1,5 +1,6 @@
 package com.yeogi.scms.domain;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class MonthlyIndexInfo {
@@ -16,7 +17,7 @@ public class MonthlyIndexInfo {
     private Integer oct;
     private Integer nov;
     private Integer decem;
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
     // Getters and setters
     public int getCertificationYear() {
@@ -123,11 +124,11 @@ public class MonthlyIndexInfo {
         this.decem = decem;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 }

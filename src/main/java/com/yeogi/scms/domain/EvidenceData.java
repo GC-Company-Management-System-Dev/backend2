@@ -1,9 +1,11 @@
 package com.yeogi.scms.domain;
 
+
 import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
@@ -15,7 +17,7 @@ public class EvidenceData {
     private String fileName;
     private double fileSize;
     private String filePath;
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
     private String creator;
 
     // Getters and setters
@@ -60,11 +62,11 @@ public class EvidenceData {
         this.filePath = filePath;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 

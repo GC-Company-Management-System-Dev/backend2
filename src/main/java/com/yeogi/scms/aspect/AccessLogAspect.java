@@ -9,10 +9,10 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Aspect
@@ -33,7 +33,14 @@ public class AccessLogAspect {
     @AfterReturning("controllerMethods()")
     public void logAccess(JoinPoint joinPoint) {
         AccessLog accessLog = new AccessLog();
-        accessLog.setTimestamp(LocalDateTime.now());
+        // 현재 시간을 LocalDateTime으로 얻음
+        LocalDateTime now = LocalDateTime.now();
+
+        // LocalDateTime을 Timestamp로 변환
+        Timestamp timestamp = Timestamp.valueOf(now);
+
+        // Timestamp를 설정
+        accessLog.setTimestamp(timestamp);
 
         // 현재 유저를 가져옴
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

@@ -14,24 +14,6 @@ import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-//@Configuration
-//public class FirebaseConfig {
-//
-//    @PostConstruct
-//    public void init() {
-//        try {
-//            FileInputStream serviceAccount = new FileInputStream("src/main/resources/key/firebaseKey.json");
-//            FirebaseOptions.Builder optionBuilder = FirebaseOptions.builder();
-//            FirebaseOptions options = optionBuilder
-//                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-//                    .build();
-//            FirebaseApp.initializeApp(options);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//}
-
 @Configuration
 @Slf4j
 public class FirebaseConfig {
@@ -44,7 +26,7 @@ public class FirebaseConfig {
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .setStorageBucket("scms-1862c.appspot.com") // storage 주소 입력
-        .build();
+                .build();
 
         FirebaseApp app = FirebaseApp.initializeApp(options);
 

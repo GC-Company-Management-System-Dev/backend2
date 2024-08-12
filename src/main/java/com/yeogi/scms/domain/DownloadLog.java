@@ -1,5 +1,6 @@
 package com.yeogi.scms.domain;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class DownloadLog {
@@ -7,7 +8,7 @@ public class DownloadLog {
     private String accessId;
     private String fileName;
     private String fileKey;
-    private LocalDateTime timestamp;
+    private Timestamp timestamp;
 
     // Getters and setters
 
@@ -43,11 +44,11 @@ public class DownloadLog {
         this.fileKey = fileKey;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 }

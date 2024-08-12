@@ -10,7 +10,7 @@ import java.util.List;
 
 @EnableAspectJAutoProxy
 @SpringBootApplication
-public class ScmsApplication{
+public class ScmsApplication {
 // implements CommandLineRunner
 //	@Autowired
 //	private LoginAccountService loginAccountService;
@@ -19,11 +19,11 @@ public class ScmsApplication{
 		SpringApplication.run(ScmsApplication.class, args);
 		System.out.println("Application started successfully"); //로그
 	}
-//
+
 //	@Override
 //	public void run(String... args) throws Exception {
 //		// 초기화 코드에서 계정 추가
-//		loginAccountService.saveLoginAccount("test2", "hyorim", "12345");
+//		loginAccountService.saveLoginAccount("test", "yujin", "12345");
 //		System.out.println("Initial user account has been created.");
 //	}
 }

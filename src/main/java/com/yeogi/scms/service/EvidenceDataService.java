@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -73,7 +74,7 @@ public class EvidenceDataService {
         evidenceData.setFileName(fileName);
         evidenceData.setFileSize(file.getSize());
         evidenceData.setFilePath(folderPath);
-        evidenceData.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));  // 한국 시간으로 설정
+        evidenceData.setCreatedAt(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("Asia/Seoul"))));  // 한국 시간으로 설정
         evidenceData.setCreator(creator);
 
         evidenceDataRepository.saveEvidenceData(evidenceData);
