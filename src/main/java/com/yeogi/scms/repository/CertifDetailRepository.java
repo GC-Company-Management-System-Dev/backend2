@@ -80,4 +80,38 @@ public class CertifDetailRepository {
         });
     }
 
+    // 인증년도를 기준으로 CertifDetail 항목을 조회
+    public List<CertifDetail> findByCertificationYear(int certificationYear) {
+        String sql = "SELECT * FROM Certification_Detail_Item WHERE Certification_Year = ?";
+        return jdbcTemplate.query(sql, new Object[]{certificationYear}, new RowMapper<CertifDetail>() {
+            @Override
+            public CertifDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return RowMapperUtil.mapCertifDetail(rs);
+            }
+        });
+    }
+
+    // Classification_Code를 기준으로 CertifDetail 항목을 조회
+    public List<CertifDetail> findBySCCode(String scCode) {
+        String sql = "SELECT * FROM Certification_Detail_Item WHERE Classification_Code = ?";
+        return jdbcTemplate.query(sql, new Object[]{scCode}, new RowMapper<CertifDetail>() {
+            @Override
+            public CertifDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return RowMapperUtil.mapCertifDetail(rs);
+            }
+        });
+    }
+
+    // 특정 년도와 월별 인덱스를 기준으로 완료된 항목을 조회
+    public List<CertifDetail> findMonthlyCompletedByYear(int certificationYear) {
+        String sql = "SELECT * FROM Certification_Detail_Item WHERE Certification_Year = ? AND Completed = 1";
+        return jdbcTemplate.query(sql, new Object[]{certificationYear}, new RowMapper<CertifDetail>() {
+            @Override
+            public CertifDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return RowMapperUtil.mapCertifDetail(rs);
+            }
+        });
+    }
+
+
 }
