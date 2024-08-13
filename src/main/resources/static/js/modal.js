@@ -311,13 +311,14 @@ function saveChangesDefects(button) {
                 alert('Error updating defectmanage: ' + (data.message || 'Unknown error'));
             }
         })
+        .then(() => { location.reload() })// 페이지를 새로고침하여 수정된 데이터를 반영)
         .catch(error => {
             console.error('Error:', error);
             alert('Error updating defectmanage: ' + error.message);
         });
 
     closeModal('editModal-defects');
-    location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
+
 }
 
 

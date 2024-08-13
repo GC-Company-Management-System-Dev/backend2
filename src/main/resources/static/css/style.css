@@ -332,19 +332,19 @@ input[type="checkbox"] {
   height: 100%;
 }
 
-.file-button {
-  display: block;
-  margin: 5px 0;
-  padding: 10px;
-  font-size: 16px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.file-button:hover {
-  background-color: #e0e0e0;
-}
+/*.file-button {*/
+/*  display: block;*/
+/*  margin: 5px 0;*/
+/*  padding: 10px;*/
+/*  font-size: 16px;*/
+/*  background-color: #f0f0f0;*/
+/*  border: 1px solid #ccc;*/
+/*  border-radius: 5px;*/
+/*  cursor: pointer;*/
+/*}*/
+/*.file-button:hover {*/
+/*  background-color: #e0e0e0;*/
+/*}*/
 
 .contents {
   display: flex;

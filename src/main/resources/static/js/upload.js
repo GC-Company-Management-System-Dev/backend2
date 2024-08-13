@@ -86,7 +86,7 @@ function DropFile(dropAreaId, fileListId) {
                 <span class="name">${file.name}</span>
                 <span class="size">${formatFileSize(file.size)}</span>
                 <button class="delete-btn" onclick="deleteFile(this.parentNode.parentNode.parentNode, ${fileKey ? `'${fileKey}'` : null})">X</button>
-                <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" class="download-btn">Download</a> <!-- 다운로드 버튼 추가 -->
+<!--                <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" class="download-btn">Download</a> &lt;!&ndash; 다운로드 버튼 추가 &ndash;&gt;-->
             </div>
         </div>
     `;
@@ -268,84 +268,84 @@ document.getElementById("modal-button-proof").addEventListener("submit", async f
     }
 });
 
-//업로드한 파일 목록 조회
+// //업로드한 파일 목록 조회
+//
+//
+// function loadFiles(detailItemCode) {
+//     // detailItemCode 폴더의 참조를 가져옵니다.
+//     var folderRef = storageRef.child(`detailItemCode/${detailItemCode}`);
+//
+//     // 폴더에 있는 모든 파일 목록을 가져옵니다.
+//     folderRef.listAll().then(function(result) {
+//         result.items.forEach(function(fileRef) {
+//             // 각 파일의 메타데이터를 가져옵니다.
+//             fileRef.getMetadata().then(function(metadata) {
+//                 // 파일 이름과 크기를 사용하여 버튼을 만듭니다.
+//                 var button = document.createElement('button');
+//                 button.textContent = `파일 이름: ${metadata.name}, 크기: ${metadata.size} bytes`;
+//                 button.classList.add('file-button'); // 버튼 스타일을 위해 클래스 추가
+//
+//                 // 섹션 4에 버튼을 추가합니다.
+//                 document.getElementById('uploaded-files').appendChild(button);
+//             }).catch(function(error) {
+//                 console.log("파일 메타데이터를 가져오는 중 오류 발생: ", error);
+//             });
+//         });
+//     }).catch(function(error) {
+//         console.log("폴더 내 파일 목록을 가져오는 중 오류 발생: ", error);
+//     });
+// }
+//
+// // 문서가 로드될 때 loadFiles 함수를 호출합니다.
+// document.addEventListener('DOMContentLoaded', function(detailItemCode) {
+//     loadFiles(detailItemCode);
+// });
 
 
-function loadFiles(detailItemCode) {
-    // detailItemCode 폴더의 참조를 가져옵니다.
-    var folderRef = storageRef.child(`detailItemCode/${detailItemCode}`);
+async function getFilesList(detailItemCode) {
+    const storageRef = firebase.storage().ref(detailItemCode);
+    const fileList = await storageRef.listAll();
+    const files = fileList.items.map(async (itemRef) => {
+        const fileURL = await itemRef.getDownloadURL();
+        const metadata = await itemRef.getMetadata();
+        return {
+            name: itemRef.name,
+            size: metadata.size,
+            url: fileURL,
+            fullPath: itemRef.fullPath
+        };
+    });
 
-    // 폴더에 있는 모든 파일 목록을 가져옵니다.
-    folderRef.listAll().then(function(result) {
-        result.items.forEach(function(fileRef) {
-            // 각 파일의 메타데이터를 가져옵니다.
-            fileRef.getMetadata().then(function(metadata) {
-                // 파일 이름과 크기를 사용하여 버튼을 만듭니다.
-                var button = document.createElement('button');
-                button.textContent = `파일 이름: ${metadata.name}, 크기: ${metadata.size} bytes`;
-                button.classList.add('file-button'); // 버튼 스타일을 위해 클래스 추가
+    return Promise.all(files);
+}
 
-                // 섹션 4에 버튼을 추가합니다.
-                document.getElementById('uploaded-files').appendChild(button);
-            }).catch(function(error) {
-                console.log("파일 메타데이터를 가져오는 중 오류 발생: ", error);
-            });
-        });
-    }).catch(function(error) {
-        console.log("폴더 내 파일 목록을 가져오는 중 오류 발생: ", error);
+async function displayFiles(detailItemCode) {
+    const files = await getFilesList(detailItemCode);
+    const uploadedFilesSection = document.getElementById("uploaded-files");
+    const modalFilesSection = document.getElementById("files");
+
+    uploadedFilesSection.innerHTML = '';  // 기존 파일 목록 초기화
+    modalFilesSection.innerHTML = '';
+
+    files.forEach(file => {
+        const fileDOM = document.createElement("div");
+        fileDOM.className = "file";
+        fileDOM.innerHTML = `
+            <div class="details">
+                <div class="header">
+                    <span class="name">${file.name}</span>
+                    <span class="size">${(file.size / 1024).toFixed(2)} KB</span>
+                    <a href="${file.url}" target="_blank" class="download-link">다운로드</a>
+                </div>
+            </div>
+        `;
+
+        uploadedFilesSection.appendChild(fileDOM);
+        modalFilesSection.appendChild(fileDOM.cloneNode(true));  // 모달에도 동일하게 추가
     });
 }
 
-// 문서가 로드될 때 loadFiles 함수를 호출합니다.
-document.addEventListener('DOMContentLoaded', function(detailItemCode) {
-    loadFiles(detailItemCode);
+document.addEventListener('DOMContentLoaded', () => {
+    const detailItemCode = document.getElementById("detailItemCode").value;
+    displayFiles(detailItemCode);
 });
-
-
-// async function getFilesList(detailItemCode) {
-//     const storageRef = firebase.storage().ref(detailItemCode);
-//     const fileList = await storageRef.listAll();
-//     const files = fileList.items.map(async (itemRef) => {
-//         const fileURL = await itemRef.getDownloadURL();
-//         const metadata = await itemRef.getMetadata();
-//         return {
-//             name: itemRef.name,
-//             size: metadata.size,
-//             url: fileURL,
-//             fullPath: itemRef.fullPath
-//         };
-//     });
-//
-//     return Promise.all(files);
-// }
-//
-// async function displayFiles(detailItemCode) {
-//     const files = await getFilesList(detailItemCode);
-//     const uploadedFilesSection = document.getElementById("uploaded-files");
-//     const modalFilesSection = document.getElementById("files");
-//
-//     uploadedFilesSection.innerHTML = '';  // 기존 파일 목록 초기화
-//     modalFilesSection.innerHTML = '';
-//
-//     files.forEach(file => {
-//         const fileDOM = document.createElement("div");
-//         fileDOM.className = "file";
-//         fileDOM.innerHTML = `
-//             <div class="details">
-//                 <div class="header">
-//                     <span class="name">${file.name}</span>
-//                     <span class="size">${(file.size / 1024).toFixed(2)} KB</span>
-//                     <a href="${file.url}" target="_blank" class="download-link">다운로드</a>
-//                 </div>
-//             </div>
-//         `;
-//
-//         uploadedFilesSection.appendChild(fileDOM);
-//         modalFilesSection.appendChild(fileDOM.cloneNode(true));  // 모달에도 동일하게 추가
-//     });
-// }
-//
-// document.addEventListener('DOMContentLoaded', () => {
-//     const detailItemCode = document.getElementById("detailItemCode").value;
-//     displayFiles(detailItemCode);
-// });
