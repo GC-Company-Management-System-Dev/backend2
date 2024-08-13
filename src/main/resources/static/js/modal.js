@@ -110,8 +110,20 @@ function openModal(modalId, buttonId) {
         document.getElementById("modifier4").value = modifier;
     } else if (modalId === 'editModal-proof') {
 
+        document.getElementById(modalId).style.display = "block";
         const detailItemCode = document.getElementById("detailItemCode").value;
-        displayFiles(detailItemCode);  // 모달 열릴 때 파일 목록 갱신
+        displayFilesInModal(detailItemCode); // 모달을 열 때 업로드된 파일 정보 로드
+
+        // 변경 일시와 변경자 정보 가져오기
+        fetch(`/evidence-modification-info/${detailItemCode}`)
+            .then(response => response.json())
+            .then(info => {
+                document.getElementById("modificationDate3").value = new Date(info.lastModified).toLocaleString();
+                document.getElementById("modifier3").value = info.creator;
+            })
+            .catch(error => {
+                console.error("정보를 가져오는 중 오류 발생:", error);
+            });
 
         // var detailItemCode = button.getAttribute("data-detail-item-code") || "";
         // var modificationDate = button.getAttribute("data-modification-date") || "N/A";
@@ -130,6 +142,7 @@ function openModal(modalId, buttonId) {
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     modal.style.display = "none";
+    location.reload(); // 페이지를 새로고침하여 수정된 데이터를 반영
 }
 
 // 수정 내용 처리 함수

@@ -60,7 +60,7 @@ public class MainController {
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
-                          DefectManageService defectManageService, OperationalStatusService operationalStatusService,
+                          DefectManageService defectManageService, OperationalStatusService operationalStatusService, EvidenceDataService evidenceDataService,
                           LoginAccountService loginAccountService, AccessLogService accessLogService, AuthenticationService authenticationService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
@@ -176,6 +176,7 @@ public class MainController {
         List<CertifContent> certifContents = certifContentService.getCertifContentByDCode(detailItemCode);
         List<DefectManage> defectManages = defectManageService.getDefectManageByDCode(detailItemCode);
         List<OperationalStatus> operationalStatuses = operationalStatusService.getOperationalStatusByDCode(detailItemCode);
+        List<EvidenceData> evidenceDatas = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
 
         String detailItemTypeName = details.stream()
                 .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
@@ -193,6 +194,7 @@ public class MainController {
         model.addAttribute("certifContents", certifContents);
         model.addAttribute("defectManages", defectManages);
         model.addAttribute("operationalStatuses", operationalStatuses);
+        model.addAttribute("evidenceDatas", evidenceDatas);
         model.addAttribute("from", from);
         model.addAttribute("detailItemCode", detailItemCode); // 여기 추가
         model.addAttribute("completed", completed);
@@ -302,6 +304,9 @@ public class MainController {
         }
     }
 
+    private final String bucketName = "scms-1862c.appspot.com";
+    private final Storage storage = StorageOptions.getDefaultInstance().getService();
+
 
     @PostMapping("/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -315,11 +320,26 @@ public class MainController {
             redirectAttributes.addFlashAttribute("message", "Failed to upload file.");
         }
 
-        return "redirect:/";
+        // 리다이렉트 URL 결정
+        String redirectUrl;
+        if (detailItemCode.startsWith("MNG")) {
+            redirectUrl = "/manage-system/" + detailItemCode;
+        } else if (detailItemCode.startsWith("PRT")) {
+            redirectUrl = "/protect-measures/" + detailItemCode;
+        } else if (detailItemCode.startsWith("PRC")) {
+            redirectUrl = "/privacy-require/" + detailItemCode;
+        } else {
+            redirectUrl = "/"; // 기본 리다이렉트 URL
+        }
+
+        return "redirect:" + redirectUrl;
     }
 
-    private final String bucketName = "scms-1862c.appspot.com";
-    private final Storage storage = StorageOptions.getDefaultInstance().getService();
+    @GetMapping("/files/{detailItemCode}")
+    @ResponseBody
+    public List<Map<String, Object>> getFiles(@PathVariable String detailItemCode) {
+        return evidenceDataService.listFilesInFolder(detailItemCode);
+    }
 
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
@@ -345,6 +365,64 @@ public class MainController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/modal-files/{detailItemCode}")
+    @ResponseBody
+    public List<EvidenceData> getFilesByDetailItemCode(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDetailItemCode(detailItemCode);
+    }
+
+    @GetMapping("/evidence-modification-info/{detailItemCode}")
+    @ResponseBody
+    public Map<String, Object> getModificationInfo(@PathVariable String detailItemCode) {
+        return evidenceDataService.getLatestModificationInfo(detailItemCode);
+    }
+
+    @DeleteMapping("/delete/{detailItemCode}/{fileName}")
+    @ResponseBody
+    public ResponseEntity<?> deleteFile(@RequestParam String fileName, @RequestParam String detailItemCode) {
+        //String detailItemCode = (String) request.get("detailItemCode");
+        //String fileName = (String) request.get("fileName");
+        //double fileSize = (Double) request.get("fileSize");
+
+        evidenceDataService.deleteFile(detailItemCode, fileName);
+
+        // Debugging statements
+        System.out.println("mdic: " + detailItemCode);
+        System.out.println("mfn: " + fileName);
+
+        return ResponseEntity.ok().build();
+    }
+
+//    @PostMapping("/delete/{detailItemCode}/{fileName}")
+//    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, Object> request, @PathVariable String detailItemCode, @PathVariable String fileName) {
+//        //String detailItemCode = (String) request.get("detailItemCode");
+//        //String fileName = (String) request.get("fileName");
+//        //double fileSize = (Double) request.get("fileSize");
+//
+//        evidenceDataService.deleteFile(detailItemCode, fileName);
+//
+//        // Debugging statements
+//        System.out.println("mdic: " + detailItemCode);
+//        System.out.println("mfn: " + fileName);
+//        //System.out.println("mfs: " + fileSize);
+//
+//        return ResponseEntity.ok().build();
+//    }
+
+
+
+//    @DeleteMapping("/delete-file")
+//    @ResponseBody
+//    public ResponseEntity<?> deleteFile(@RequestParam String fileName, @RequestParam String detailItemCode) {
+//        try {
+//            evidenceDataService.deleteFile(fileName, detailItemCode);
+//            return ResponseEntity.ok().build();
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//    }
+
 
 }
 
