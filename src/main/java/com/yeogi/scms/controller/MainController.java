@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -341,31 +342,6 @@ public class MainController {
         return evidenceDataService.listFilesInFolder(detailItemCode);
     }
 
-    @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
-                                                 @RequestParam("detailItemCode") String detailItemCode) {
-        try {
-            String folderPath = detailItemCode + "/" + fileName;
-            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
-
-            if (blob == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentLength(blob.getSize())
-                    .contentType(MediaType.parseMediaType(blob.getContentType()))
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @GetMapping("/modal-files/{detailItemCode}")
     @ResponseBody
     public List<EvidenceData> getFilesByDetailItemCode(@PathVariable String detailItemCode) {
@@ -396,7 +372,67 @@ public class MainController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
+                                                 @RequestParam("detailItemCode") String detailItemCode,
+                                                 @AuthenticationPrincipal CustomUserDetails user) {
+        try {
+            String folderPath = detailItemCode + "/" + fileName;
+            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
+
+            if (blob == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 파일 다운로드 로그 저장
+            AccessLog accessLog = new AccessLog();
+            accessLog.setAccessId(user.getNickname());  // 접속자 ID 설정
+            accessLog.setAction("DOWNLOAD");  // ACT를 "DOWNLOAD"로 설정
+            accessLog.setAccessPath("/" + detailItemCode + "/" + fileName);  // PATH를 설정
+            accessLog.setTimestamp(Timestamp.valueOf(LocalDateTime.now()));  // 현재 시간 설정
+            accessLogService.saveAccessLog(accessLog);  // 로그 저장
+
+            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(blob.getSize())
+                    .contentType(MediaType.parseMediaType(blob.getContentType()))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
+
+//    @GetMapping("/download")
+//    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
+//                                                 @RequestParam("detailItemCode") String detailItemCode) {
+//        try {
+//            String folderPath = detailItemCode + "/" + fileName;
+//            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
+//
+//            if (blob == null) {
+//                return ResponseEntity.notFound().build();
+//            }
+//
+//            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+//
+//            return ResponseEntity.ok()
+//                    .headers(headers)
+//                    .contentLength(blob.getSize())
+//                    .contentType(MediaType.parseMediaType(blob.getContentType()))
+//                    .body(resource);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
 
 //    @PostMapping("/delete/{detailItemCode}/{fileName}")
 //    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, Object> request, @PathVariable String detailItemCode, @PathVariable String fileName) {

@@ -4,11 +4,13 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.*;
 import com.google.firebase.cloud.StorageClient;
 import com.yeogi.scms.domain.EvidenceData;
+import com.yeogi.scms.domain.LoginAccount;
 import com.yeogi.scms.repository.EvidenceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,7 @@ public class EvidenceDataService {
         // 현재 로그인한 사용자의 닉네임을 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+
 
         // DB에 파일 정보 저장
         EvidenceData evidenceData = new EvidenceData();

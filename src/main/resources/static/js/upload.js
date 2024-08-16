@@ -213,14 +213,20 @@ function displayFiles(detailItemCode) {
                 const fileElement = document.createElement("div");
                 fileElement.className = "file";
 
+                // 파일 이름을 URL 인코딩하여 전달
+                const encodedFileName = encodeURIComponent(file.name);
+
                 fileElement.innerHTML = `
                     <div class="details">
                         <div class="header">
                             <span class="name">${file.name}</span>
                             <span class="size">${formatFileSize(file.size)}</span>
+                            <button class="download-btn" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}', '${file.name}')">download</button>
+<!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${encodedFileName}">download</a>-->
+<!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${file.name}">download</a>-->
 <!--                            <button class="download-btn" onclick="downloadFile('${file.url}')">download</button>-->
 <!--                            <input type="button" class="download-btn" onclick="downloadFile('${file.url}', '${file.name}')">-->
-                            <a href="${file.url}" download="${file.name}">download</a>
+<!--                            <a href="${file.url}" download="${file.name}">download</a>-->
 <!--                            <a onclick="downloadFile('${file.url}', '${file.name}')">download</a>-->
                         </div>
                     </div>
@@ -248,18 +254,32 @@ function formatFileSize(sizeInBytes) {
 }
 
 // 파일 다운로드 함수
-function downloadFile(url, name) {
-
-    // 새로운 앵커 태그 생성
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = name; // 파일명에서 앞의 11자 제거
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    // window.open(url);
+function downloadFile(url, fileName) {
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => console.error('다운로드 중 오류 발생:', error));
 }
+
+// function downloadFile(url, name) {
+//
+//     // 새로운 앵커 태그 생성
+//     const link = document.createElement("a");
+//     link.href = url;
+//     link.download = name; // 파일명에서 앞의 11자 제거
+//     document.body.appendChild(link);
+//     link.click();
+//     link.remove();
+//
+//     // window.open(url);
+// }
 
 // 모달에서 파일 정보 조회
 function displayFilesInModal(detailItemCode) {
