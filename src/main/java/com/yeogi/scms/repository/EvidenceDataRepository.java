@@ -15,9 +15,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Repository
 public class EvidenceDataRepository {
     private final JdbcTemplate jdbcTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(EvidenceDataRepository.class);
 
     public EvidenceDataRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -26,16 +31,33 @@ public class EvidenceDataRepository {
     // detailItemCode에 해당하는 증적자료 파일 목록 조회
     public List<EvidenceData> findByDetailCode(String detailItemCode) {
         String sql = "SELECT * FROM Evidence_Data WHERE Detail_Item_Code = ? AND File_Name IS NOT NULL";
-        return jdbcTemplate.query(sql, new Object[]{detailItemCode}, new RowMapper<EvidenceData>() {
+
+        System.out.println("Detail Item Code: " + detailItemCode);
+
+        List<EvidenceData> evidenceDataList = jdbcTemplate.query(sql, new Object[]{detailItemCode}, new RowMapper<EvidenceData>() {
             @Override
             public EvidenceData mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return RowMapperUtil.mapEvidenceData(rs);
             }
         });
+
+        // 조회된 결과 로그 추가
+        logger.info("Query result size: {}", evidenceDataList.size());
+        evidenceDataList.forEach(evidenceData ->
+                logger.info("Retrieved EvidenceData: DetailItemCode={}, FileName={}",
+                        evidenceData.getDetailItemCode(),
+                        evidenceData.getFileName()));
+
+        return evidenceDataList;
     }
 
     // 파일 정보 저장
     public void saveEvidenceData(EvidenceData evidenceData) {
+        // 중복 데이터 삭제
+        String deleteSql = "DELETE FROM Evidence_Data WHERE Detail_Item_Code = ? AND File_Name = ?";
+        jdbcTemplate.update(deleteSql, evidenceData.getDetailItemCode(), evidenceData.getFileName());
+
+        // 새로운 데이터 삽입
         String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator) " +
                 "VALUES (?, ?, ?, ?, ?, CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), ?)";
 
@@ -58,8 +80,8 @@ public class EvidenceDataRepository {
 
     // 파일 정보 삭제
     public void deleteEvidenceData(String detailItemCode, String fileName) {
-        String sql = "DELETE FROM Evidence_Data WHERE Detail_Item_Code = ? AND File_Name = ?";
-        jdbcTemplate.update(sql, detailItemCode, fileName);
+        String dsql = "DELETE FROM Evidence_Data WHERE Detail_Item_Code = ? AND File_Name = ?";
+        jdbcTemplate.update(dsql, detailItemCode, fileName);
 
         // Debugging statements
         System.out.println("rdic: " + detailItemCode);

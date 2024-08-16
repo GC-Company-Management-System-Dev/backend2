@@ -70,17 +70,8 @@ public class EvidenceData {
         this.createdAt = createdAt;
     }
 
-    public String getCreator() {
+    public String getCreator() { return creator; }
 
-        // 현재 로그인한 사용자의 닉네임을 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
-
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
+    public void setCreator(String creator) { this.creator = creator; }
 }
 

@@ -16,6 +16,8 @@
     };
 </script>
 <body>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
 <div th:replace="fragments/header :: header"></div>
 
 <main class="d-flex flex-nowrap">
@@ -178,7 +180,8 @@
             <div class="section" style="grid-column: 1; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
                 <div style="display: flex; align-items: center;">
                     <h2>증적자료</h2>
-                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)">수정</button>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)" th:value="${detailItemCode}">수정</button>
+                    <input type="hidden" name="detailItemCode" th:value="${detailItemCode}">
 <!--                            th:each="evidenceData : ${evidenceDatas}"-->
 <!--                            th:attr="data-detail-item-code=${evidenceData.detailItemCode},-->
 <!--                                data-modification-date=${evidenceData.createdAt},-->
@@ -359,9 +362,15 @@
 </body>
 <script type="module">
     // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { initializeApp } from "firebase/app";
+    // import { getAnalytics } from "firebase/app";
+    // import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getStorage } from "firebase/storage";
+    import { getStorage, ref } from "firebase/storage";
+    import { getStorage, ref, uploadString } from 'firebase/storage';
     import { getStorage, ref, deleteObject } from "firebase/storage";
+
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -381,6 +390,12 @@
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const storage = getStorage();
+    const storageRef = ref(storage);
+
+    FirebaseApp.initializeApp();
+    firebase.initializeApp(firebaseConfig);
+    // var storage = firebase.storage();
+    // var storageRef = storage.ref();
 
 </script>
 </html>

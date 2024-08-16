@@ -369,7 +369,7 @@ public class MainController {
     @GetMapping("/modal-files/{detailItemCode}")
     @ResponseBody
     public List<EvidenceData> getFilesByDetailItemCode(@PathVariable String detailItemCode) {
-        return evidenceDataService.getEvidenceDataByDetailItemCode(detailItemCode);
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
     }
 
     @GetMapping("/evidence-modification-info/{detailItemCode}")
@@ -378,21 +378,25 @@ public class MainController {
         return evidenceDataService.getLatestModificationInfo(detailItemCode);
     }
 
-    @DeleteMapping("/delete/{detailItemCode}/{fileName}")
+    @DeleteMapping("/delete")
     @ResponseBody
-    public ResponseEntity<?> deleteFile(@RequestParam String fileName, @RequestParam String detailItemCode) {
+    public ResponseEntity<?> deleteFile(@PathVariable String detailItemCode, @PathVariable String fileName) {
         //String detailItemCode = (String) request.get("detailItemCode");
         //String fileName = (String) request.get("fileName");
-        //double fileSize = (Double) request.get("fileSize");
 
-        evidenceDataService.deleteFile(detailItemCode, fileName);
+        boolean success = evidenceDataService.deleteFile(detailItemCode, fileName);
 
         // Debugging statements
         System.out.println("mdic: " + detailItemCode);
         System.out.println("mfn: " + fileName);
 
-        return ResponseEntity.ok().build();
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+}
 
 //    @PostMapping("/delete/{detailItemCode}/{fileName}")
 //    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, Object> request, @PathVariable String detailItemCode, @PathVariable String fileName) {
@@ -424,7 +428,7 @@ public class MainController {
 //    }
 
 
-}
+
 
 
 

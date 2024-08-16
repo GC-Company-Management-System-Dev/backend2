@@ -32,10 +32,6 @@ public class EvidenceDataService {
         this.evidenceDataRepository = evidenceDataRepository;
     }
 
-    public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
-        return evidenceDataRepository.findByDetailCode(detailItemCode);
-    }
-
     private final String bucketName = "scms-1862c.appspot.com";
     private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
@@ -44,7 +40,9 @@ public class EvidenceDataService {
         String fileName = file.getOriginalFilename();
         String folderPath = detailItemCode + "/" + fileName;  // detailItemCode 폴더 생성
 
-        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, folderPath).build();
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, folderPath)
+                .setAcl(Collections.singletonList(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER)))  // 파일을 공개로 설정
+                .build();
         storage.create(blobInfo, file.getBytes());
 
         // 현재 로그인한 사용자의 닉네임을 가져오기
@@ -86,7 +84,7 @@ public class EvidenceDataService {
     }
 
     // detailItemCode에 해당하는 증적자료 파일 목록을 가져오는 메소드
-    public List<EvidenceData> getEvidenceDataByDetailItemCode(String detailItemCode) {
+    public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
         return evidenceDataRepository.findByDetailCode(detailItemCode);
     }
 
@@ -97,21 +95,31 @@ public class EvidenceDataService {
 
     // 파일 삭제
     @Transactional
-    public void deleteFile(String detailItemCode, String fileName) {
-        // Firebase Storage에서 파일 삭제
-        String filePath = detailItemCode + "/" + fileName;
+    public boolean deleteFile(String detailItemCode, String fileName) {
+
+        try {
+            // Firebase Storage에서 파일 삭제
+            String filePath = detailItemCode + "/" + fileName;
 //        StorageClient.getInstance().bucket().get(filePath).delete();
 
-        Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
-        bucket.get(filePath).delete();
+            Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
+            bucket.get(filePath).delete();
 
-        // DB에서 파일 정보 삭제
-        evidenceDataRepository.deleteEvidenceData(detailItemCode, fileName);
+            // DB에서 파일 정보 삭제
+            evidenceDataRepository.deleteEvidenceData(detailItemCode, fileName);
 
-        // Debugging statements
-        System.out.println("sdic: " + detailItemCode);
-        System.out.println("sfn: " + fileName);
+            // Debugging statements
+            System.out.println("sdic: " + detailItemCode);
+            System.out.println("sfn: " + fileName);
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
+}
 
 //    // 파일 삭제 메서드
 //    public void deleteFile(UUID fileKey) {
@@ -205,4 +213,4 @@ public class EvidenceDataService {
 //    public void deleteEvidenceData(UUID fileKey) {
 //        evidenceDataRepository.deleteByFileKey(fileKey);
 //    }
-}
+
