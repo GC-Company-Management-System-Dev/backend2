@@ -35,6 +35,7 @@ function DropFile(dropAreaId, fileListId) {
     function handleFiles(files) {
         files = [...files];
         droppedFiles.push(...files); // 드래그 앤 드롭된 파일들을 배열에 추가
+        console.log('Dropped files:', droppedFiles);  // 로그로 확인
         files.forEach(previewFile);
     }
 
@@ -134,6 +135,68 @@ const storageRef = ref(storage);
 // const storageRef = storage.ref();
 // const storageRef = firebase.storage().ref(fileName);
 
+function handleFormSubmit(e) {
+    e.preventDefault();
+
+    const form = document.getElementById('editForm-proof');
+    const formData = new FormData(form);
+
+    // 드래그 앤 드롭된 파일들을 가져오기
+    const droppedFiles = dropFile.getDroppedFiles();
+    const inputFiles = document.getElementById('chooseFile').files;
+
+    // 선택된 파일들과 드래그 앤 드롭된 파일들을 FormData에 추가
+    const allFiles = [...droppedFiles, ...inputFiles];
+    allFiles.forEach(file => {
+        formData.append('file', file);  // 'file'은 서버에서 받아줄 필드명으로 변경 필요
+    });
+
+    const uploadPromises = allFiles.map((file) => {
+        const fileRef = storageRef.child(file.name);
+        return new Promise((resolve, reject) => {
+            const uploadTask = fileRef.put(file);
+            uploadTask.on(
+                'state_changed',
+                snapshot => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                error => {
+                    console.error('Upload failed:', error);
+                    reject(error);
+                },
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        formData.append('files[]', downloadURL);  // Firebase 다운로드 URL 추가
+                        resolve(downloadURL);
+                    });
+                }
+            );
+        });
+    });
+
+    // 모든 파일이 Firebase에 업로드된 후 서버에 폼 데이터 전송
+    Promise.all(uploadPromises)
+        .then(() => {
+            return fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayFiles(document.getElementById("detailItemCode").value);  // 업로드된 파일 목록 갱신
+            } else {
+                console.error("파일 업로드 실패:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error("파일 업로드 중 오류 발생:", error);
+        });
+}
+
+
 // function handleFormSubmit(e) {
 //     e.preventDefault();
 //
@@ -191,8 +254,6 @@ const storageRef = ref(storage);
 //             console.error("Error during file upload:", error);
 //         });
 // }
-
-
 
 // function handleFormSubmit(e) {
 //     e.preventDefault();
@@ -267,7 +328,7 @@ const storageRef = ref(storage);
 //             console.error('파일 업로드 중 오류 발생:', error);
 //         });
 // }
-
+//
 // document.getElementById('chooseFile').addEventListener('change', function(e) {
 //     dropFile.handleFiles(e.target.files);
 // });
@@ -323,55 +384,55 @@ const storageRef = ref(storage);
 //
 // document.getElementById("modal-button-proof").addEventListener("submit", handleFormSubmit);
 
-// 파일 업로드를 위한 AJAX 요청 추가
-async function uploadFile(file, detailItemCode) {
-
-    //firebase-storage에 파일 업로드
-    const uploadTask = storageRef.put(file);
-    uploadTask.on('state_changed', function(snapshot) {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-                console.log('Upload is paused');
-                break;
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-                console.log('Upload is running');
-                break;
-        }
-    })
-
-    let formData = new FormData();
-    formData.append("file", file);
-
-    let response = await fetch("/upload", {
-        method: "POST",
-        body: formData
-    });
-
-    if (response.ok) {
-        displayFiles(detailItemCode);  // 업로드된 파일 목록을 갱신
-    } else {
-        console.error("파일 업로드 실패");
-    }
-}
-
-
-//파일 업로드
-document.getElementById("modal-button-proof").addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    const detailItemCode = button.getAttribute("data-detail-item-code") || "";
-
-    document.getElementById("detailItemCode").value = detailItemCode;
-
-    //const detailItemCode = document.querySelector('input[name="detailItemCode"]').value;
-    const files = document.getElementById("chooseFile").files;
-
-    for (let i = 0; i < files.length; i++) {
-        await uploadFile(files[i], detailItemCode);
-    }
-});
+// // 파일 업로드를 위한 AJAX 요청 추가
+// async function uploadFile(file, detailItemCode) {
+//
+//     //firebase-storage에 파일 업로드
+//     const uploadTask = storageRef.put(file);
+//     uploadTask.on('state_changed', function(snapshot) {
+//         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+//         console.log('Upload is ' + progress + '% done');
+//         switch (snapshot.state) {
+//             case firebase.storage.TaskState.PAUSED: // or 'paused'
+//                 console.log('Upload is paused');
+//                 break;
+//             case firebase.storage.TaskState.RUNNING: // or 'running'
+//                 console.log('Upload is running');
+//                 break;
+//         }
+//     })
+//
+//     let formData = new FormData();
+//     formData.append("file", file);
+//
+//     let response = await fetch("/upload", {
+//         method: "POST",
+//         body: formData
+//     });
+//
+//     if (response.ok) {
+//         displayFiles(detailItemCode);  // 업로드된 파일 목록을 갱신
+//     } else {
+//         console.error("파일 업로드 실패");
+//     }
+// }
+//
+//
+// //파일 업로드
+// document.getElementById("modal-button-proof").addEventListener("submit", async function(e) {
+//     e.preventDefault();
+//
+//     const detailItemCode = button.getAttribute("data-detail-item-code") || "";
+//
+//     document.getElementById("detailItemCode").value = detailItemCode;
+//
+//     //const detailItemCode = document.querySelector('input[name="detailItemCode"]').value;
+//     const files = document.getElementById("chooseFile").files;
+//
+//     for (let i = 0; i < files.length; i++) {
+//         await uploadFile(files[i], detailItemCode);
+//     }
+// });
 
 
 // // 파일 업로드를 위한 AJAX 요청 추가
