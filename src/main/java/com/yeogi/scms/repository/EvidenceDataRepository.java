@@ -58,12 +58,12 @@ public class EvidenceDataRepository {
         jdbcTemplate.update(deleteSql, evidenceData.getDetailItemCode(), evidenceData.getFileName());
 
         // 새로운 데이터 삽입
-        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator) " +
-                "VALUES (?, ?, ?, ?, ?, CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), ?)";
+        String sql = "INSERT INTO Evidence_Data (Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Created_At, Creator, Year) " +
+                "VALUES (?, ?, ?, ?, ?, CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), ?, ?)";
 
         jdbcTemplate.update(sql, evidenceData.getDetailItemCode(), evidenceData.getFileName(),
                 evidenceData.getFileSize(), evidenceData.getFilePath(),
-                evidenceData.getFileKey().toString(), evidenceData.getCreator());
+                evidenceData.getFileKey().toString(), evidenceData.getCreator(), evidenceData.getYear());
     }
 
     // detailItemCode에 해당하는 가장 최근 수정 일시와 변경자 조회
@@ -104,8 +104,8 @@ public class EvidenceDataRepository {
     // saveAll 메서드 추가
     public void saveAll(List<EvidenceData> evidenceDataList) {
         String sql = "INSERT INTO Evidence_Data " +
-                "(Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Creator) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+                "(Detail_Item_Code, File_Name, File_Size, File_Path, File_Key, Creator, Year) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, evidenceDataList, evidenceDataList.size(), (ps, evidenceData) -> {
             ps.setString(1, evidenceData.getDetailItemCode());
@@ -118,6 +118,7 @@ public class EvidenceDataRepository {
             ps.setString(5, newFileKey);
 
             ps.setString(6, evidenceData.getCreator());
+            ps.setInt(7, evidenceData.getYear());
         });
     }
 }
