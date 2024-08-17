@@ -378,7 +378,21 @@ public class MainController {
                                                  @RequestParam("detailItemCode") String detailItemCode,
                                                  @AuthenticationPrincipal CustomUserDetails user) {
         try {
-            String folderPath = detailItemCode + "/" + fileName;
+
+            // 4, 5번째 문자를 추출하여 year 계산
+            int year = 0;  // 기본값 설정
+            if (detailItemCode != null && detailItemCode.length() >= 5) {
+                try {
+                    String yearPart = detailItemCode.substring(3, 5); // 4, 5번째 문자 추출
+                    year = Integer.parseInt("20" + yearPart);  // 예: "27" -> 2027
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid detailItemCode format: Unable to extract year.");
+                }
+            } else {
+                throw new IllegalArgumentException("detailItemCode is too short to extract year.");
+            }
+
+            String folderPath = year + "/" + detailItemCode + "/" + fileName;
             Blob blob = storage.get(BlobId.of(bucketName, folderPath));
 
             if (blob == null) {
