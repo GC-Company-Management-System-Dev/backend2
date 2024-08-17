@@ -49,7 +49,8 @@ public class EvidenceDataService {
 
         // 현재 로그인한 사용자의 닉네임을 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String creator = userDetails.getNickname();
 
 
         // DB에 파일 정보 저장
