@@ -4,6 +4,7 @@ function DropFile(dropAreaId, fileListId) {
     let fileList = document.getElementById(fileListId);
     let detailItemCode = document.getElementById("detailItemCode").value; // Detail Item Code from your context
     let creator = "creatorName"; // Set the creator name appropriately
+    let droppedFiles = []; // 드래그 앤 드롭으로 추가된 파일들을 저장할 배열
 
     function preventDefaults(e) {
         e.preventDefault();
@@ -33,6 +34,7 @@ function DropFile(dropAreaId, fileListId) {
 
     function handleFiles(files) {
         files = [...files];
+        droppedFiles.push(...files); // 드래그 앤 드롭된 파일들을 배열에 추가
         files.forEach(previewFile);
     }
 
@@ -85,10 +87,13 @@ function DropFile(dropAreaId, fileListId) {
     dropArea.addEventListener("drop", handleDrop, false);
 
     return {
-        handleFiles
+        handleFiles,
+        getDroppedFiles: () => droppedFiles // 드래그 앤 드롭된 파일들을 반환하는 함수 추가
     };
 
 }
+
+const dropFile = new DropFile("drop-file", "files");
 
 // 업로드 전 X 버튼 클릭 시 DOM에서 삭제
 function deleteFileFromDOM(fileDOM) {
@@ -101,8 +106,6 @@ document.querySelector('#files').addEventListener('click', function(e) {
         deleteFileFromDOM(fileDOM);  // 서버에 업로드되지 않은 파일을 DOM에서만 삭제
     }
 });
-
-const dropFile = new DropFile("drop-file", "files");
 
 const firebaseConfig = {
     apiKey: "AIzaSyBdLTcjtlDsPCTtJ2vxszVHlVWgUvrz9Xs",
@@ -175,7 +178,10 @@ document.getElementById("modal-button-proof").addEventListener("submit", async f
     document.getElementById("detailItemCode").value = detailItemCode;
 
     //const detailItemCode = document.querySelector('input[name="detailItemCode"]').value;
-    const files = document.getElementById("chooseFile").files;
+    const choosefiles = document.getElementById("chooseFile").files;
+    const droppedFiles = dropFile.getDroppedFiles(); // 드래그 앤 드롭된 파일들 가져오기
+
+    const files = [...choosefiles, ...droppedFiles]; // 선택된 파일과 드래그 앤 드롭된 파일 합치기
 
     for (let i = 0; i < files.length; i++) {
         await uploadFile(files[i], detailItemCode);
