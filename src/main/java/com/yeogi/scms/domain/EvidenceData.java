@@ -19,6 +19,7 @@ public class EvidenceData {
     private String filePath;
     private Timestamp createdAt;
     private String creator;
+    private int year;
 
     // Getters and setters
 
@@ -73,5 +74,14 @@ public class EvidenceData {
     public String getCreator() { return creator; }
 
     public void setCreator(String creator) { this.creator = creator; }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
 }
 

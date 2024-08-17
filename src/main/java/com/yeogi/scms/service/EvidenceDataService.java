@@ -39,8 +39,21 @@ public class EvidenceDataService {
 
     public String uploadFile(MultipartFile file, String detailItemCode) throws IOException {
 
+        // 4, 5번째 문자를 추출하여 year 계산
+        int year = 0;  // 기본값 설정
+        if (detailItemCode != null && detailItemCode.length() >= 5) {
+            try {
+                String yearPart = detailItemCode.substring(3, 5); // 4, 5번째 문자 추출
+                year = Integer.parseInt("20" + yearPart);  // 예: "27" -> 2027
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid detailItemCode format: Unable to extract year.");
+            }
+        } else {
+            throw new IllegalArgumentException("detailItemCode is too short to extract year.");
+        }
+
         String fileName = file.getOriginalFilename();
-        String folderPath = detailItemCode + "/" + fileName;  // detailItemCode 폴더 생성
+        String folderPath = year + "/" + detailItemCode + "/" + fileName;  // detailItemCode 폴더 생성
 
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, folderPath)
                 .setAcl(Collections.singletonList(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER)))  // 파일을 공개로 설정
@@ -62,6 +75,7 @@ public class EvidenceDataService {
         evidenceData.setFilePath(folderPath);
         evidenceData.setCreatedAt(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("Asia/Seoul"))));  // 한국 시간으로 설정
         evidenceData.setCreator(creator);
+        evidenceData.setYear(year);
 
         evidenceDataRepository.saveEvidenceData(evidenceData);
 
@@ -101,8 +115,22 @@ public class EvidenceDataService {
 
     // 파일 삭제
     public void deleteFile(String detailItemCode, String fileName) {
+
+        // 4, 5번째 문자를 추출하여 year 계산
+        int year = 0;  // 기본값 설정
+        if (detailItemCode != null && detailItemCode.length() >= 5) {
+            try {
+                String yearPart = detailItemCode.substring(3, 5); // 4, 5번째 문자 추출
+                year = Integer.parseInt("20" + yearPart);  // 예: "27" -> 2027
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid detailItemCode format: Unable to extract year.");
+            }
+        } else {
+            throw new IllegalArgumentException("detailItemCode is too short to extract year.");
+        }
+
         // Firebase Storage에서 파일 삭제
-        String filePath = detailItemCode + "/" + fileName;
+        String filePath = year + "/" + detailItemCode + "/" + fileName;
         BlobId blobId = BlobId.of(bucketName, filePath);
         boolean deleted = storage.delete(blobId);
 
