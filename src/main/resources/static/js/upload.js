@@ -196,20 +196,14 @@ function displayFiles(detailItemCode) {
                 fileElement.className = "file";
 
                 // 파일 이름을 URL 인코딩하여 전달
-                const encodedFileName = encodeURIComponent(file.name);
+                const encodedFileName = encodeURIComponent(file.fileName);
 
                 fileElement.innerHTML = `
                     <div class="details">
                         <div class="header">
-                            <span class="name">${file.name}</span>
-                            <span class="size">${formatFileSize(file.size)}</span>
-                            <button class="download-btn" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}', '${file.name}')">download</button>
-<!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${encodedFileName}">download</a>-->
-<!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${file.name}">download</a>-->
-<!--                            <button class="download-btn" onclick="downloadFile('${file.url}')">download</button>-->
-<!--                            <input type="button" class="download-btn" onclick="downloadFile('${file.url}', '${file.name}')">-->
-<!--                            <a href="${file.url}" download="${file.name}">download</a>-->
-<!--                            <a onclick="downloadFile('${file.url}', '${file.name}')">download</a>-->
+                            <span class="name">${file.fileName}</span>
+                            <span class="size">${formatFileSize(file.fileSize)}</span>
+                            <button class="download-btn" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}', '${file.fileName}')">download</button>
                         </div>
                     </div>
                 `;

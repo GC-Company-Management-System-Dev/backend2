@@ -86,8 +86,6 @@ public class EvidenceDataRepository {
         System.out.println("rdic: " + detailItemCode);
         System.out.println("rfn: " + fileName);
 
-//        jdbcTemplate.update(sql, detailItemCode, fileName);
-
         int rowsAffected = jdbcTemplate.update(sql, detailItemCode, fileName);
         if (rowsAffected > 0) {
             logger.info("Successfully deleted file information from DB.");
@@ -95,6 +93,13 @@ public class EvidenceDataRepository {
             logger.warn("No matching file information found in DB.");
         }
     }
+
+    // 파일 이름이 없거나 파일 크기가 0인 파일 정보 삭제
+    public void deleteEmptyFiles(String detailItemCode) {
+        String sql = "DELETE FROM Evidence_Data WHERE Detail_Item_Code = ? AND (File_Name IS NULL OR File_Name = '' OR File_Size = 0)";
+        jdbcTemplate.update(sql, detailItemCode);
+    }
+
 
     // saveAll 메서드 추가
     public void saveAll(List<EvidenceData> evidenceDataList) {

@@ -157,16 +157,28 @@ public class MainController {
 
     @GetMapping("/manage-system/{detailItemCode}")
     public String showManageSystemDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "manage-system", model, user);
     }
 
     @GetMapping("/protect-measures/{detailItemCode}")
     public String showProtectMeasuresDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "protect-measures", model, user);
     }
 
     @GetMapping("/privacy-require/{detailItemCode}")
     public String showPrivacyRequireDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "privacy-require", model, user);
     }
 
@@ -336,11 +348,18 @@ public class MainController {
         return "redirect:" + redirectUrl;
     }
 
-    @GetMapping("/files/{detailItemCode}")
-    @ResponseBody
-    public List<Map<String, Object>> getFiles(@PathVariable String detailItemCode) {
-        return evidenceDataService.listFilesInFolder(detailItemCode);
+    //Firebase 스토리지에서 파일 조회
+//    @GetMapping("/files/{detailItemCode}")
+//    @ResponseBody
+//    public List<Map<String, Object>> getFiles(@PathVariable String detailItemCode) {
+//        return evidenceDataService.listFilesInFolder(detailItemCode);
+//    }
+
+    @GetMapping("/files/{detailItemCode}")@ResponseBody
+    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
     }
+
 
     @GetMapping("/modal-files/{detailItemCode}")
     @ResponseBody
@@ -407,82 +426,7 @@ public class MainController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패 시 500 에러 반환
         }
     }
-
-
-//    @DeleteMapping("/delete")
-//    @ResponseBody
-//    public ResponseEntity<?> deleteFile(@PathVariable String detailItemCode, @PathVariable String fileName) {
-//        //String detailItemCode = (String) request.get("detailItemCode");
-//        //String fileName = (String) request.get("fileName");
-//
-//        boolean success = evidenceDataService.deleteFile(detailItemCode, fileName);
-//
-//        // Debugging statements
-//        System.out.println("mdic: " + detailItemCode);
-//        System.out.println("mfn: " + fileName);
-//
-//        if (success) {
-//            return ResponseEntity.ok().build();
-//        } else {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
 }
-
-//    @GetMapping("/download")
-//    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
-//                                                 @RequestParam("detailItemCode") String detailItemCode) {
-//        try {
-//            String folderPath = detailItemCode + "/" + fileName;
-//            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
-//
-//            if (blob == null) {
-//                return ResponseEntity.notFound().build();
-//            }
-//
-//            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
-//
-//            return ResponseEntity.ok()
-//                    .headers(headers)
-//                    .contentLength(blob.getSize())
-//                    .contentType(MediaType.parseMediaType(blob.getContentType()))
-//                    .body(resource);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
-
-//    @PostMapping("/delete/{detailItemCode}/{fileName}")
-//    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, Object> request, @PathVariable String detailItemCode, @PathVariable String fileName) {
-//        //String detailItemCode = (String) request.get("detailItemCode");
-//        //String fileName = (String) request.get("fileName");
-//        //double fileSize = (Double) request.get("fileSize");
-//
-//        evidenceDataService.deleteFile(detailItemCode, fileName);
-//
-//        // Debugging statements
-//        System.out.println("mdic: " + detailItemCode);
-//        System.out.println("mfn: " + fileName);
-//        //System.out.println("mfs: " + fileSize);
-//
-//        return ResponseEntity.ok().build();
-//    }
-
-
-
-//    @DeleteMapping("/delete-file")
-//    @ResponseBody
-//    public ResponseEntity<?> deleteFile(@RequestParam String fileName, @RequestParam String detailItemCode) {
-//        try {
-//            evidenceDataService.deleteFile(fileName, detailItemCode);
-//            return ResponseEntity.ok().build();
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-//        }
-//    }
-
 
 
 

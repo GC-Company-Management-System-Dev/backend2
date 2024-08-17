@@ -68,23 +68,25 @@ public class EvidenceDataService {
     }
 
     // 파일 정보 조회
-    public List<Map<String, Object>> listFilesInFolder(String detailItemCode) {
-        List<Map<String, Object>> files = new ArrayList<>();
-        String folderPath = detailItemCode + "/";
 
-        Page<Blob> blobs = storage.list(bucketName, Storage.BlobListOption.prefix(folderPath));
-
-        for (Blob blob : blobs.iterateAll()) {
-            Map<String, Object> fileData = new HashMap<>();
-            fileData.put("name", blob.getName().substring(folderPath.length()));
-            fileData.put("size", blob.getSize());
-            fileData.put("url", blob.getMediaLink());
-
-            files.add(fileData);
-        }
-
-        return files;
-    }
+    // Firebase 스토리지에서 파일 조회
+//    public List<Map<String, Object>> listFilesInFolder(String detailItemCode) {
+//        List<Map<String, Object>> files = new ArrayList<>();
+//        String folderPath = detailItemCode + "/";
+//
+//        Page<Blob> blobs = storage.list(bucketName, Storage.BlobListOption.prefix(folderPath));
+//
+//        for (Blob blob : blobs.iterateAll()) {
+//            Map<String, Object> fileData = new HashMap<>();
+//            fileData.put("name", blob.getName().substring(folderPath.length()));
+//            fileData.put("size", blob.getSize());
+//            fileData.put("url", blob.getMediaLink());
+//
+//            files.add(fileData);
+//        }
+//
+//        return files;
+//    }
 
     // detailItemCode에 해당하는 증적자료 파일 목록을 가져오는 메소드
     public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
@@ -103,9 +105,10 @@ public class EvidenceDataService {
         BlobId blobId = BlobId.of(bucketName, filePath);
         boolean deleted = storage.delete(blobId);
 
+        // DB에서 파일 정보 삭제
+        evidenceDataRepository.deleteByDetailItemCodeAndFileName(detailItemCode, fileName);
+
         if (deleted) {
-            // DB에서 파일 정보 삭제
-            evidenceDataRepository.deleteByDetailItemCodeAndFileName(detailItemCode, fileName);
 
             // Debugging statements
             System.out.println("sdic: " + detailItemCode);
@@ -114,6 +117,11 @@ public class EvidenceDataService {
         } else {
             throw new RuntimeException("Failed to delete file from Firebase Storage.");
         }
+    }
+
+    // 파일 이름이 없거나 파일 크기가 0인 파일 삭제
+    public void deleteEmptyFiles(String detailItemCode) {
+        evidenceDataRepository.deleteEmptyFiles(detailItemCode);
     }
 }
 
