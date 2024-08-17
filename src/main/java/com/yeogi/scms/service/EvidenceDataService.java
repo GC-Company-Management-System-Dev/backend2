@@ -1,22 +1,25 @@
 package com.yeogi.scms.service;
 
+import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.*;
 import com.google.firebase.cloud.StorageClient;
 import com.yeogi.scms.domain.EvidenceData;
+import com.yeogi.scms.domain.LoginAccount;
 import com.yeogi.scms.repository.EvidenceDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class EvidenceDataService {
@@ -31,27 +34,6 @@ public class EvidenceDataService {
         this.evidenceDataRepository = evidenceDataRepository;
     }
 
-    public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
-        return evidenceDataRepository.findByDetailCode(detailItemCode);
-    }
-
-//    public String uploadFile(MultipartFile file) throws IOException {
-//        Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
-//        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-//        //Blob blob = bucket.create(fileName, file.getBytes(), file.getContentType());
-//        Blob blob = bucket.create(fileName, file.getInputStream(), file.getContentType());
-//
-//        return blob.getMediaLink(); // 파일 경로를 반환
-//    }
-//
-//    public void deleteFile(String filePath) {
-//        Bucket bucket = StorageClient.getInstance().bucket();
-//        Blob blob = bucket.get(filePath);
-//        if (blob != null) {
-//            blob.delete();
-//        }
-//    }
-
     private final String bucketName = "scms-1862c.appspot.com";
     private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
@@ -60,12 +42,16 @@ public class EvidenceDataService {
         String fileName = file.getOriginalFilename();
         String folderPath = detailItemCode + "/" + fileName;  // detailItemCode 폴더 생성
 
-        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, folderPath).build();
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, folderPath)
+                .setAcl(Collections.singletonList(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER)))  // 파일을 공개로 설정
+                .build();
         storage.create(blobInfo, file.getBytes());
 
         // 현재 로그인한 사용자의 닉네임을 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String creator = userDetails.getNickname();
+
 
         // DB에 파일 정보 저장
         EvidenceData evidenceData = new EvidenceData();
@@ -80,50 +66,63 @@ public class EvidenceDataService {
         evidenceDataRepository.saveEvidenceData(evidenceData);
 
         return fileName;
-
-//        String fileName = file.getOriginalFilename();
-//        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fileName).build();
-//        storage.create(blobInfo, file.getBytes());
-//        return fileName;
     }
 
-    // 파일 업로드
-    public String uploadFirebaseBucket(MultipartFile multipartFile, String fileName) throws IOException {
-        Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
+    // 파일 정보 조회
 
-        Blob blob = bucket.create(fileName,
-                multipartFile.getInputStream(), multipartFile.getContentType());
+    // Firebase 스토리지에서 파일 조회
+//    public List<Map<String, Object>> listFilesInFolder(String detailItemCode) {
+//        List<Map<String, Object>> files = new ArrayList<>();
+//        String folderPath = detailItemCode + "/";
+//
+//        Page<Blob> blobs = storage.list(bucketName, Storage.BlobListOption.prefix(folderPath));
+//
+//        for (Blob blob : blobs.iterateAll()) {
+//            Map<String, Object> fileData = new HashMap<>();
+//            fileData.put("name", blob.getName().substring(folderPath.length()));
+//            fileData.put("size", blob.getSize());
+//            fileData.put("url", blob.getMediaLink());
+//
+//            files.add(fileData);
+//        }
+//
+//        return files;
+//    }
 
-        return blob.getMediaLink(); // 파이어베이스에 저장된 파일 url
+    // detailItemCode에 해당하는 증적자료 파일 목록을 가져오는 메소드
+    public List<EvidenceData> getEvidenceDataByDCode(String detailItemCode) {
+        return evidenceDataRepository.findByDetailCode(detailItemCode);
+    }
+
+    // detailItemCode에 해당하는 가장 최근에 수정된 일시와 변경자를 가져오는 메소드
+    public Map<String, Object> getLatestModificationInfo(String detailItemCode) {
+        return evidenceDataRepository.findLatestModificationInfoByDetailItemCode(detailItemCode);
     }
 
     // 파일 삭제
-    public void deleteFirebaseBucket(String key) {
-        Bucket bucket = StorageClient.getInstance().bucket(firebaseStorageUrl);
+    public void deleteFile(String detailItemCode, String fileName) {
+        // Firebase Storage에서 파일 삭제
+        String filePath = detailItemCode + "/" + fileName;
+        BlobId blobId = BlobId.of(bucketName, filePath);
+        boolean deleted = storage.delete(blobId);
 
-        bucket.get(key).delete();
-    }
+        // DB에서 파일 정보 삭제
+        evidenceDataRepository.deleteByDetailItemCodeAndFileName(detailItemCode, fileName);
 
-    public boolean saveEvidenceData(String detailItemCode, String fileName, Double fileSize, String filePath, String creator, String fileKey){
-        try {
-            // 현재 로그인한 사용자의 닉네임을 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            creator = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+        if (deleted) {
 
-            evidenceDataRepository.save(fileName, fileSize, filePath, fileKey, creator, detailItemCode);
-            return true;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
+            // Debugging statements
+            System.out.println("sdic: " + detailItemCode);
+            System.out.println("sfn: " + fileName);
+
+        } else {
+            throw new RuntimeException("Failed to delete file from Firebase Storage.");
         }
     }
 
-
-    public void saveEvidenceData(EvidenceData evidenceData) {
-        evidenceDataRepository.saveEvidenceData(evidenceData);
-    }
-
-    public void deleteEvidenceData(UUID fileKey) {
-        evidenceDataRepository.deleteByFileKey(fileKey);
+    // 파일 이름이 없거나 파일 크기가 0인 파일 삭제
+    public void deleteEmptyFiles(String detailItemCode) {
+        evidenceDataRepository.deleteEmptyFiles(detailItemCode);
     }
 }
+

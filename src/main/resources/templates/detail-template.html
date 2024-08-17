@@ -7,7 +7,17 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <th:block th:replace="fragments/head :: common-head"></th:block>
 </head>
+<script>
+    // 페이지가 로드될 때 업로드된 파일 정보 로드
+    window.onload = function() {
+        const pathParts = window.location.pathname.split('/');
+        const detailItemCode = pathParts[pathParts.length - 1];
+        displayFiles(detailItemCode);
+    };
+</script>
 <body>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
 <div th:replace="fragments/header :: header"></div>
 
 <main class="d-flex flex-nowrap">
@@ -170,7 +180,8 @@
             <div class="section" style="grid-column: 1; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
                 <div style="display: flex; align-items: center;">
                     <h2>증적자료</h2>
-                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)">수정</button>
+                    <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)" th:value="${detailItemCode}">수정</button>
+                    <input type="hidden" name="detailItemCode" th:value="${detailItemCode}">
 <!--                            th:each="evidenceData : ${evidenceDatas}"-->
 <!--                            th:attr="data-detail-item-code=${evidenceData.detailItemCode},-->
 <!--                                data-modification-date=${evidenceData.createdAt},-->
@@ -183,6 +194,7 @@
                     <div id="uploaded-files" class="files">
                         <!-- 여기에 업로드된 파일 목록이 표시됩니다. -->
 
+
                     </div>
 
                 </div>
@@ -194,6 +206,7 @@
                     <span class="close" onclick="closeModal('editModal-proof')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">증적자료 업로드</h2>
                     <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data" method="post" action="/upload" th:action="@{/upload}">
+                        <input type="hidden" value="${currentUser.nickname}">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
@@ -205,8 +218,8 @@
                                 <td><input type="text" id="modifier3" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 80%">
-                                <th style="width: 20%; text-align: right;"><label for="drop-file">파일 선택</label></th>
-                                <td>
+<!--                                <th style="width: 20%; text-align: right;"><label for="drop-file">파일 선택</label></th>-->
+                                <td colspan="2">
 
                                     <div id="root">
                                         <div class="contents">
@@ -217,6 +230,14 @@
                                                 </div>
                                                 <label class="file-label" for="chooseFile">파일 선택</label>
                                                 <input type="file" class="file" id="chooseFile" name="file" multiple onchange="dropFile.handleFiles(this.files)">
+                                            </div>
+                                            <div id="uploaded-file" class="files">
+                                                <div class="file">
+                                                    <div class="header">
+                                                        <span class="name"></span>
+                                                        <span class="size"></span>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div id="files" class="files">
                                                 <div class="file">
@@ -342,8 +363,15 @@
 </body>
 <script type="module">
     // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { initializeApp } from "firebase/app";
+    // import { getAnalytics } from "firebase/app";
+    // import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getStorage } from "firebase/storage";
+    import { getStorage, ref } from "firebase/storage";
+    import { getStorage, ref, uploadString } from 'firebase/storage';
+    import { getStorage, ref, deleteObject } from "firebase/storage";
+
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -362,5 +390,13 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
+    const storage = getStorage();
+    const storageRef = ref(storage);
+
+    FirebaseApp.initializeApp();
+    firebase.initializeApp(firebaseConfig);
+    // var storage = firebase.storage();
+    // var storageRef = storage.ref();
+
 </script>
 </html>

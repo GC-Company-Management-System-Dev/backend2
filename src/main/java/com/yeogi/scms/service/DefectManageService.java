@@ -25,8 +25,10 @@ public class DefectManageService {
 
     public boolean updateDefectManage(String detailItemCode, String certificationType, String defectContent, String modifier) {
         try {
+            // 현재 로그인한 사용자의 닉네임을 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            modifier = authentication.getName();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            modifier  = userDetails.getNickname();
 
             defectManageRepository.updateDefectManage(detailItemCode, certificationType, defectContent, modifier);
 

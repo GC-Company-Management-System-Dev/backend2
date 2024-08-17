@@ -27,7 +27,8 @@ public class OperationalStatusService {
         try {
             // 현재 로그인한 사용자의 닉네임을 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            modifier = authentication.getName(); // UserDetails의 getUsername()을 통해 가져온다
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            modifier  = userDetails.getNickname();
 
             operationalStatusRepository.updateOperationalStatus(detailItemCode, status, relatedDocument, evidenceName, modifier);
             return true;

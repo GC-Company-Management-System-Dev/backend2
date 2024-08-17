@@ -4,6 +4,7 @@ function DropFile(dropAreaId, fileListId) {
     let fileList = document.getElementById(fileListId);
     let detailItemCode = document.getElementById("detailItemCode").value; // Detail Item Code from your context
     let creator = "creatorName"; // Set the creator name appropriately
+    let droppedFiles = []; // 드래그 앤 드롭으로 추가된 파일들을 저장할 배열
 
     function preventDefaults(e) {
         e.preventDefault();
@@ -33,28 +34,13 @@ function DropFile(dropAreaId, fileListId) {
 
     function handleFiles(files) {
         files = [...files];
+        droppedFiles.push(...files); // 드래그 앤 드롭된 파일들을 배열에 추가
         files.forEach(previewFile);
     }
 
     function previewFile(file) {
         console.log(file);
         fileList.appendChild(renderFile(file));
-    }
-
-    function deleteFile(fileDOM, fileKey) {
-        if (fileKey) {
-            // 서버에서 파일 삭제 요청
-            fetch(`/api/evidence/${fileKey}`, {
-                method: 'DELETE'
-            }).then(() => {
-                fileDOM.remove(); // 성공 시 DOM에서 제거
-            }).catch(error => {
-                console.error('Error:', error);
-            });
-        } else {
-            // 서버에 업로드되지 않은 경우, 단순히 DOM에서만 제거
-            fileDOM.remove();
-        }
     }
 
     function formatFileSize(sizeInBytes) {
@@ -76,67 +62,23 @@ function DropFile(dropAreaId, fileListId) {
     function renderFile(file) {
         let fileDOM = document.createElement("div");
 
-        // 새로운 변수 추가: fileKey는 서버에서 받은 경우에만 사용됨
-        let fileKey = file.key || null;
-
         fileDOM.className = "file";
         fileDOM.innerHTML = `
-            <div class="details">
-                <div class="header">
-                    <span class="name">${file.name}</span>
-                    <span class="size">${formatFileSize(file.size)}</span>
-                    <button class="delete-btn" onclick="deleteFile(this.parentNode.parentNode.parentNode, ${fileKey ? `'${fileKey}'` : null})">X</button>
-                </div>
+        <div class="details">
+            <div class="header">
+                <span class="name">${file.name}</span>
+                <span class="size">${formatFileSize(file.size)}</span>
+                <button class="delete-dom-btn" onclick="deleteFileFromDOM(this.parentNode.parentNode.parentNode)">X</button>
+<!--                <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" class="download-btn">Download</a> &lt;!&ndash; 다운로드 버튼 추가 &ndash;&gt;-->
             </div>
-        `;
+        </div>
+    `;
 
         // 파일 엘리먼트를 업로드된 파일 목록에 추가
         const uploadedFiles = document.getElementById("uploaded-files");
         uploadedFiles.appendChild(fileDOM);
 
-        // 삭제 버튼에 이벤트 리스너 연결
-        fileDOM.querySelector('.delete-btn').addEventListener('click', function() {
-            deleteFile(fileDOM, fileKey);
-        });
-
-
         return fileDOM;
-    }
-
-    // function uploadFile(file) {
-    //     let formData = new FormData();
-    //     formData.append("file", file);
-    //     formData.append("detailItemCode", detailItemCode);
-    //     formData.append("creator", creator);
-    //
-    //     fetch("/api/evidence/upload", {
-    //         method: "POST",
-    //         body: formData
-    //     }).then(response => response.text())
-    //         .then(result => {
-    //             console.log(result);
-    //             getUploadedFiles();
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //         });
-    // }
-    //
-    function getUploadedFiles() {
-        fetch(`/api/evidence/files/${detailItemCode}`)
-            .then(response => response.json())
-            .then(files => {
-                fileList.innerHTML = '';
-                files.forEach(file => {
-                    fileList.appendChild(renderFile(file));
-                });
-            });
-    }
-
-    function downloadFile(fileURL) {
-        // 파일 다운로드 로직을 여기에 추가
-        // 예를 들어, 새 탭에서 파일 다운로드 URL을 열도록 하거나, AJAX 요청을 사용하여 파일을 다운로드할 수 있습니다.
-        window.open(fileURL, '_blank');
     }
 
     dropArea.addEventListener("dragenter", highlight, false);
@@ -146,18 +88,26 @@ function DropFile(dropAreaId, fileListId) {
 
     return {
         handleFiles,
-        getUploadedFiles
+        getDroppedFiles: () => droppedFiles // 드래그 앤 드롭된 파일들을 반환하는 함수 추가
     };
 
 }
 
 const dropFile = new DropFile("drop-file", "files");
 
-// Call this function when the modal is opened or the page is loaded to show existing files
-dropFile.getUploadedFiles();
+// 업로드 전 X 버튼 클릭 시 DOM에서 삭제
+function deleteFileFromDOM(fileDOM) {
+    fileDOM.remove();
+}
 
+document.querySelector('#files').addEventListener('click', function(e) {
+    if (e.target.classList.contains('delete-dom-btn')) {
+        const fileDOM = e.target.closest('.file');
+        deleteFileFromDOM(fileDOM);  // 서버에 업로드되지 않은 파일을 DOM에서만 삭제
+    }
+});
 
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyBdLTcjtlDsPCTtJ2vxszVHlVWgUvrz9Xs",
     authDomain: "scms-1862c.firebaseapp.com",
     projectId: "scms-1862c",
@@ -169,77 +119,42 @@ var firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+// const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);
 
-var auth = firebase.auth();
-var user = firebase.auth().currentUser;
-var provider = new firebase.auth.GoogleAuthProvider();
 
-//firebase-storage에 파일 업로드
-var storageRef = firebase.storage().ref(fileName);
-var uploadTask = storageRef.put(file);
-uploadTask.on('state_changed', function(snapshot) {
-    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    console.log('Upload is ' + progress + '% done');
-    switch (snapshot.state) {
-        case firebase.storage.TaskState.PAUSED: // or 'paused'
-            console.log('Upload is paused');
-            break;
-        case firebase.storage.TaskState.RUNNING: // or 'running'
-            console.log('Upload is running');
-            break;
-    }
-})
+const auth = firebase.auth();
+const user = firebase.auth().currentUser;
+const provider = new firebase.auth.GoogleAuthProvider();
+
+// 스토리지 참조 생성
+const storage = getStorage();
+const storageRef = ref(storage);
+
+//const storage = firebase.storage();
+//const storageRef = firebase.storage().ref(fileName);
 
 
 // 파일 업로드를 위한 AJAX 요청 추가
 async function uploadFile(file, detailItemCode) {
+
+    //firebase-storage에 파일 업로드
+    const uploadTask = storageRef.put(file);
+    uploadTask.on('state_changed', function(snapshot) {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+                console.log('Upload is paused');
+                break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+                console.log('Upload is running');
+                break;
+        }
+    })
+
     let formData = new FormData();
     formData.append("file", file);
-    formData.append("detailItemCode", detailItemCode);
-
-    let response = await fetch("/upload", {
-        method: "POST",
-        body: formData
-    });
-
-    return await response.json();
-}
-
-function openModal(modalId, buttonId) {
-    var modal = document.getElementById(modalId);
-    var button = document.getElementById(buttonId);
-
-    if (modalId === 'editModal-proof') {
-        const detailItemCode = document.getElementById("detailItemCode").value;
-        displayFiles(detailItemCode);  // 모달 열릴 때 파일 목록 갱신
-        // var detailItemCode = button.getAttribute("data-detail-item-code") || "";
-        // var modificationDate = button.getAttribute("data-modification-date") || "N/A";
-        // var modifier = button.getAttribute("data-modifier") || "N/A";
-        //
-        // document.getElementById("detailItemCode").value = detailItemCode;
-        // document.getElementById("modificationDate3").value = modificationDate;
-        // document.getElementById("modifier3").value = modifier;
-    }
-
-    modal.style.display = "block";
-}
-
-document.getElementById("modal-button-proof").addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    var detailItemCode = button.getAttribute("data-detail-item-code") || "";
-
-    document.getElementById("detailItemCode").value = detailItemCode;
-
-    //const detailItemCode = document.querySelector('input[name="detailItemCode"]').value;
-    const files = document.getElementById("chooseFile").files;
-
-    let formData = new FormData();
-    formData.append("detailItemCode", detailItemCode);
-
-    for (let i = 0; i < files.length; i++) {
-        formData.append("file", files[i]);
-    }
 
     let response = await fetch("/upload", {
         method: "POST",
@@ -247,61 +162,156 @@ document.getElementById("modal-button-proof").addEventListener("submit", async f
     });
 
     if (response.ok) {
-        let result = await response.json();
-        // 성공 시 처리
-        dropFile.getUploadedFiles();  // 업로드된 파일 목록을 갱신
-        displayFiles(detailItemCode);
+        displayFiles(detailItemCode);  // 업로드된 파일 목록을 갱신
     } else {
-        // 실패 시 처리
         console.error("파일 업로드 실패");
+    }
+}
+
+
+//파일 업로드
+document.getElementById("modal-button-proof").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const detailItemCode = button.getAttribute("data-detail-item-code") || "";
+
+    document.getElementById("detailItemCode").value = detailItemCode;
+
+    //const detailItemCode = document.querySelector('input[name="detailItemCode"]').value;
+    const choosefiles = document.getElementById("chooseFile").files;
+    const droppedFiles = dropFile.getDroppedFiles(); // 드래그 앤 드롭된 파일들 가져오기
+
+    const files = [...choosefiles, ...droppedFiles]; // 선택된 파일과 드래그 앤 드롭된 파일 합치기
+
+    for (let i = 0; i < files.length; i++) {
+        await uploadFile(files[i], detailItemCode);
     }
 });
 
-//업로드한 파일 목록 조회
-async function getFilesList(detailItemCode) {
-    const storageRef = firebase.storage().ref(detailItemCode);
-    const fileList = await storageRef.listAll();
-    const files = fileList.items.map(async (itemRef) => {
-        const fileURL = await itemRef.getDownloadURL();
-        const metadata = await itemRef.getMetadata();
-        return {
-            name: itemRef.name,
-            size: metadata.size,
-            url: fileURL,
-            fullPath: itemRef.fullPath
-        };
-    });
+//파일 조회
+function displayFiles(detailItemCode) {
+    fetch(`/files/${detailItemCode}`)
+        .then(response => response.json())
+        .then(async files => {
+            const uploadedFilesDiv = document.getElementById("uploaded-files");
+            uploadedFilesDiv.innerHTML = ''; // 기존 내용을 초기화
 
-    return Promise.all(files);
+            for (const file of files) {
+
+                const fileElement = document.createElement("div");
+                fileElement.className = "file";
+
+                // 파일 이름을 URL 인코딩하여 전달
+                const encodedFileName = encodeURIComponent(file.fileName);
+
+                fileElement.innerHTML = `
+                    <div class="details">
+                        <div class="header">
+                            <span class="name">${file.fileName}</span>
+                            <span class="size">${formatFileSize(file.fileSize)}</span>
+                            <button class="download-btn" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}', '${file.fileName}')">download</button>
+                        </div>
+                    </div>
+                `;
+
+                uploadedFilesDiv.appendChild(fileElement);
+            }
+        })
+        .catch(error => {
+            console.error("파일 목록 조회 중 오류 발생:", error);
+        });
 }
 
-async function displayFiles(detailItemCode) {
-    const files = await getFilesList(detailItemCode);
-    const uploadedFilesSection = document.getElementById("uploaded-files");
-    const modalFilesSection = document.getElementById("files");
+function formatFileSize(sizeInBytes) {
+    const kilobyte = 1024;
+    const megabyte = kilobyte * 1024;
 
-    uploadedFilesSection.innerHTML = '';  // 기존 파일 목록 초기화
-    modalFilesSection.innerHTML = '';
-
-    files.forEach(file => {
-        const fileDOM = document.createElement("div");
-        fileDOM.className = "file";
-        fileDOM.innerHTML = `
-            <div class="details">
-                <div class="header">
-                    <span class="name">${file.name}</span>
-                    <span class="size">${(file.size / 1024).toFixed(2)} KB</span>
-                    <a href="${file.url}" target="_blank" class="download-link">다운로드</a>
-                </div>
-            </div>
-        `;
-
-        uploadedFilesSection.appendChild(fileDOM);
-        modalFilesSection.appendChild(fileDOM.cloneNode(true));  // 모달에도 동일하게 추가
-    });
+    if (sizeInBytes < kilobyte) {
+        return sizeInBytes + ' Bytes';
+    } else if (sizeInBytes < megabyte) {
+        return (sizeInBytes / kilobyte).toFixed(2) + ' KB';
+    } else {
+        return (sizeInBytes / megabyte).toFixed(2) + ' MB';
+    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const detailItemCode = document.getElementById("detailItemCode").value;
-    displayFiles(detailItemCode);
-});
+// 파일 다운로드 함수
+function downloadFile(url, fileName) {
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => console.error('다운로드 중 오류 발생:', error));
+}
+
+// 모달 창에서 파일 정보 조회
+function displayFilesInModal(detailItemCode) {
+    fetch(`/modal-files/${detailItemCode}`)
+        .then(response => response.json())
+        .then(files => {
+            const uploadedFilesDiv = document.getElementById("uploaded-file");
+            uploadedFilesDiv.innerHTML = ''; // 기존 내용을 초기화
+
+            files.forEach(file => {
+                const fileElement = document.createElement("div");
+                fileElement.className = "file";
+
+                fileElement.innerHTML = `
+                        <div class="header">
+                            <span class="name">${file.fileName}</span>
+                            <span class="size">${formatFileSize(file.fileSize)}</span>
+                            <button class="delete-btn" onclick="confirmDelete('${file.fileName}', '${detailItemCode}')">X</button>
+                        </div>
+                    `;
+
+                uploadedFilesDiv.appendChild(fileElement);
+            });
+        })
+        .catch(error => {
+            console.error("파일 목록 조회 중 오류 발생:", error);
+        });
+}
+
+// CSRF 토큰 설정
+var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+// 파일 삭제 확인 및 처리
+function confirmDelete(fileName, detailItemCode) {
+    if (confirm(`${fileName} 파일을 정말 삭제하시겠습니까?`)) {
+        deleteFile(fileName, detailItemCode);
+    }
+}
+
+// 파일 삭제 요청
+function deleteFile(fileName, detailItemCode) {
+    console.log("Deleting file:", fileName, detailItemCode); // 로그 추가
+
+    fetch(`/delete-file`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [header]: token, // CSRF 토큰을 헤더에 추가
+        },
+        body: JSON.stringify({ fileName, detailItemCode }),
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log("File deletion successful"); // 성공 로그 추가
+                displayFilesInModal(detailItemCode); // 파일 목록 갱신
+            } else {
+                console.error("File deletion failed:", response.status); // 실패 로그 추가
+                alert("파일 삭제에 실패했습니다.");
+            }
+        })
+        .catch(error => {
+            console.error("파일 삭제 중 오류 발생:", error);
+        });
+}
+

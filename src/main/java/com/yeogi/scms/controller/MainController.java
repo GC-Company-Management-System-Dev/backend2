@@ -1,6 +1,10 @@
 package com.yeogi.scms.controller;
 
 import com.google.api.Authentication;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.firebase.remoteconfig.User;
 import com.yeogi.scms.domain.*;
 import com.yeogi.scms.service.*;
@@ -8,6 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +61,7 @@ public class MainController {
 
     @Autowired
     public MainController(SCMasterService scmMasterService, CertifDetailService certifDetailService, CertifContentService certifContentService,
-                          DefectManageService defectManageService, OperationalStatusService operationalStatusService,
+                          DefectManageService defectManageService, OperationalStatusService operationalStatusService, EvidenceDataService evidenceDataService,
                           LoginAccountService loginAccountService, AccessLogService accessLogService, AuthenticationService authenticationService) {
         this.scmMasterService = scmMasterService;
         this.certifDetailService = certifDetailService;
@@ -147,16 +157,28 @@ public class MainController {
 
     @GetMapping("/manage-system/{detailItemCode}")
     public String showManageSystemDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "manage-system", model, user);
     }
 
     @GetMapping("/protect-measures/{detailItemCode}")
     public String showProtectMeasuresDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "protect-measures", model, user);
     }
 
     @GetMapping("/privacy-require/{detailItemCode}")
     public String showPrivacyRequireDetail(@PathVariable String detailItemCode, Model model, @AuthenticationPrincipal CustomUserDetails user) {
+
+        // 빈 파일 삭제
+        evidenceDataService.deleteEmptyFiles(detailItemCode);
+
         return showDetail(detailItemCode, "privacy-require", model, user);
     }
 
@@ -167,6 +189,7 @@ public class MainController {
         List<CertifContent> certifContents = certifContentService.getCertifContentByDCode(detailItemCode);
         List<DefectManage> defectManages = defectManageService.getDefectManageByDCode(detailItemCode);
         List<OperationalStatus> operationalStatuses = operationalStatusService.getOperationalStatusByDCode(detailItemCode);
+        List<EvidenceData> evidenceDatas = evidenceDataService.getEvidenceDataByDCode(detailItemCode);
 
         String detailItemTypeName = details.stream()
                 .filter(detail -> detailItemCode.equals(detail.getDetailItemCode()))
@@ -184,6 +207,7 @@ public class MainController {
         model.addAttribute("certifContents", certifContents);
         model.addAttribute("defectManages", defectManages);
         model.addAttribute("operationalStatuses", operationalStatuses);
+        model.addAttribute("evidenceDatas", evidenceDatas);
         model.addAttribute("from", from);
         model.addAttribute("detailItemCode", detailItemCode); // 여기 추가
         model.addAttribute("completed", completed);
@@ -293,6 +317,9 @@ public class MainController {
         }
     }
 
+    private final String bucketName = "scms-1862c.appspot.com";
+    private final Storage storage = StorageOptions.getDefaultInstance().getService();
+
 
     @PostMapping("/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -306,9 +333,102 @@ public class MainController {
             redirectAttributes.addFlashAttribute("message", "Failed to upload file.");
         }
 
-        return "redirect:/";
+        // 리다이렉트 URL 결정
+        String redirectUrl;
+        if (detailItemCode.startsWith("MNG")) {
+            redirectUrl = "/manage-system/" + detailItemCode;
+        } else if (detailItemCode.startsWith("PRT")) {
+            redirectUrl = "/protect-measures/" + detailItemCode;
+        } else if (detailItemCode.startsWith("PRC")) {
+            redirectUrl = "/privacy-require/" + detailItemCode;
+        } else {
+            redirectUrl = "/"; // 기본 리다이렉트 URL
+        }
+
+        return "redirect:" + redirectUrl;
+    }
+
+    //Firebase 스토리지에서 파일 조회
+//    @GetMapping("/files/{detailItemCode}")
+//    @ResponseBody
+//    public List<Map<String, Object>> getFiles(@PathVariable String detailItemCode) {
+//        return evidenceDataService.listFilesInFolder(detailItemCode);
+//    }
+
+    @GetMapping("/files/{detailItemCode}")@ResponseBody
+    public List<EvidenceData> getFiles(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+    }
+
+
+    @GetMapping("/modal-files/{detailItemCode}")
+    @ResponseBody
+    public List<EvidenceData> getFilesByDetailItemCode(@PathVariable String detailItemCode) {
+        return evidenceDataService.getEvidenceDataByDCode(detailItemCode);
+    }
+
+    @GetMapping("/evidence-modification-info/{detailItemCode}")
+    @ResponseBody
+    public Map<String, Object> getModificationInfo(@PathVariable String detailItemCode) {
+        return evidenceDataService.getLatestModificationInfo(detailItemCode);
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
+                                                 @RequestParam("detailItemCode") String detailItemCode,
+                                                 @AuthenticationPrincipal CustomUserDetails user) {
+        try {
+            String folderPath = detailItemCode + "/" + fileName;
+            Blob blob = storage.get(BlobId.of(bucketName, folderPath));
+
+            if (blob == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 파일 다운로드 로그 저장
+            AccessLog accessLog = new AccessLog();
+            accessLog.setAccessId(user.getNickname());  // 접속자 ID 설정
+            accessLog.setAction("DOWNLOAD");  // ACT를 "DOWNLOAD"로 설정
+            accessLog.setAccessPath("/" + detailItemCode + "/" + fileName);  // PATH를 설정
+            accessLog.setTimestamp(Timestamp.valueOf(LocalDateTime.now()));  // 현재 시간 설정
+            accessLogService.saveAccessLog(accessLog);  // 로그 저장
+
+            ByteArrayResource resource = new ByteArrayResource(blob.getContent());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(blob.getSize())
+                    .contentType(MediaType.parseMediaType(blob.getContentType()))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/delete-file")
+    @ResponseBody
+    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, String> payload) {
+        String fileName = payload.get("fileName");
+        String detailItemCode = payload.get("detailItemCode");
+
+        try {
+            evidenceDataService.deleteFile(detailItemCode, fileName);
+
+            // Debugging statements
+            System.out.println("mdic: " + detailItemCode);
+            System.out.println("mfn: " + fileName);
+
+            return ResponseEntity.ok().build(); // 성공 시 200 OK 반환
+        } catch (Exception e) {
+            e.printStackTrace(); // 로그에 에러 출력
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패 시 500 에러 반환
+        }
     }
 }
+
+
 
 
 
