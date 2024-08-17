@@ -206,6 +206,7 @@
                     <span class="close" onclick="closeModal('editModal-proof')">&times;</span>
                     <h2 class="modal-title" style="font-size: 30px; font-weight: bold;">증적자료 업로드</h2>
                     <form id="editForm-proof" style="width: 100%; height: 100%" enctype="multipart/form-data" method="post" action="/upload" th:action="@{/upload}">
+                        <input type="hidden" value="${currentUser.nickname}">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">

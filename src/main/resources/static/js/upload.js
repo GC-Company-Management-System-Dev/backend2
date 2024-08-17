@@ -79,19 +79,6 @@ function DropFile(dropAreaId, fileListId) {
         return fileDOM;
     }
 
-
-    // function getUploadedFiles() {
-    //     fetch(`/api/evidence/files/${detailItemCode}`)
-    //         .then(response => response.json())
-    //         .then(files => {
-    //             fileList.innerHTML = '';
-    //             files.forEach(file => {
-    //                 fileList.appendChild(renderFile(file));
-    //             });
-    //         });
-    // }
-
-
     dropArea.addEventListener("dragenter", highlight, false);
     dropArea.addEventListener("dragover", highlight, false);
     dropArea.addEventListener("dragleave", unhighlight, false);
@@ -99,7 +86,6 @@ function DropFile(dropAreaId, fileListId) {
 
     return {
         handleFiles
-        //getUploadedFiles
     };
 
 }
@@ -117,9 +103,6 @@ document.querySelector('#files').addEventListener('click', function(e) {
 });
 
 const dropFile = new DropFile("drop-file", "files");
-
-// Call this function when the modal is opened or the page is loaded to show existing files
-//dropFile.getUploadedFiles();
 
 const firebaseConfig = {
     apiKey: "AIzaSyBdLTcjtlDsPCTtJ2vxszVHlVWgUvrz9Xs",
@@ -169,7 +152,6 @@ async function uploadFile(file, detailItemCode) {
 
     let formData = new FormData();
     formData.append("file", file);
-    //formData.append("detailItemCode", detailItemCode);
 
     let response = await fetch("/upload", {
         method: "POST",
@@ -268,108 +250,68 @@ function downloadFile(url, fileName) {
         .catch(error => console.error('다운로드 중 오류 발생:', error));
 }
 
-// function downloadFile(url, name) {
-//
-//     // 새로운 앵커 태그 생성
-//     const link = document.createElement("a");
-//     link.href = url;
-//     link.download = name; // 파일명에서 앞의 11자 제거
-//     document.body.appendChild(link);
-//     link.click();
-//     link.remove();
-//
-//     // window.open(url);
-// }
-
-// 모달에서 파일 정보 조회
+// 모달 창에서 파일 정보 조회
 function displayFilesInModal(detailItemCode) {
-    // 서버에서 데이터 가져오기
-    $.ajax({
-        url: `/modal-files/${detailItemCode}`,
-        method: 'GET',
-        success: function(files) {
-            // 기존의 파일 리스트를 초기화
-            $('#uploaded-file').empty();
+    fetch(`/modal-files/${detailItemCode}`)
+        .then(response => response.json())
+        .then(files => {
+            const uploadedFilesDiv = document.getElementById("uploaded-file");
+            uploadedFilesDiv.innerHTML = ''; // 기존 내용을 초기화
 
-            if (files.length > 0) {
-                // 파일 데이터를 순회하며 HTML에 삽입
-                files.forEach(file => {
-                    if (file.detailItemCode === detailItemCode) {  // 필터링 추가
-                        const fileElement = `
-                            <div class="file">
-                                <div class="header">
-                                    <span class="name">${file.fileName}</span>
-                                    <span class="size">${formatFileSize(file.fileSize)}</span>
-                                    <button class="delete-btn" onclick="confirmDelete('${file.fileName}', '${file.detailItemCode}')">X</button>
-                                </div>
-                            </div>
-                        `;
-                        $('#uploaded-file').append(fileElement);
-                    }
-                });
-            } else {
-                $('#uploaded-file').append('<p>No files found</p>');
-            }
-        },
-        error: function(error) {
-            console.error("Error fetching files:", error);
-            $('#uploaded-file').append('<p>Error fetching files</p>');
-        }
-    });
+            files.forEach(file => {
+                const fileElement = document.createElement("div");
+                fileElement.className = "file";
+
+                fileElement.innerHTML = `
+                        <div class="header">
+                            <span class="name">${file.fileName}</span>
+                            <span class="size">${formatFileSize(file.fileSize)}</span>
+                            <button class="delete-btn" onclick="confirmDelete('${file.fileName}', '${detailItemCode}')">X</button>
+                        </div>
+                    `;
+
+                uploadedFilesDiv.appendChild(fileElement);
+            });
+        })
+        .catch(error => {
+            console.error("파일 목록 조회 중 오류 발생:", error);
+        });
 }
 
-// 파일 삭제
+// CSRF 토큰 설정
+var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+// 파일 삭제 확인 및 처리
 function confirmDelete(fileName, detailItemCode) {
-    if (confirm(`${fileName}을(를) 정말 삭제하시겠습니까?`)) {
-
-        const storage = getStorage();
-
-        // Firebase Storage에서 파일을 가리키는 참조 생성
-        const desertRef = ref(storage, `/${detailItemCode}/${fileName}`);
-
-        deleteObject(desertRef).then(() => {
-            deleteFileFromDB(fileName, detailItemCode);
-        }).catch((error) => {
-            console.error("Firebase 파일 삭제 실패:", error);
-            alert("파일 삭제 중 오류가 발생했습니다.");
-        });
-
-        // var desertRef = storageRef.child('${detailItemCode}/${fileName}');
-        // var desertRef = firebase.storage().ref(`${detailItemCode}/${fileName}`);
-
-        // desertRef.delete().then(() => {
-        //     // File deleted successfully
-        //     deleteFileFromDB(fileName, detailItemCode);
-        // }).catch((error) => {
-        //     // Uh-oh, an error occurred!
-        //     console.error("Firebase 파일 삭제 실패:", error);
-        //     alert("파일 삭제 중 오류가 발생했습니다.");
-        // });
+    if (confirm(`${fileName} 파일을 정말 삭제하시겠습니까?`)) {
+        deleteFile(fileName, detailItemCode);
     }
 }
 
-async function deleteFileFromDB(fileName, detailItemCode) {
+// 파일 삭제 요청
+function deleteFile(fileName, detailItemCode) {
+    console.log("Deleting file:", fileName, detailItemCode); // 로그 추가
 
-    try {
-
-        // 파일 정보 삭제를 위한 서버 요청
-        let response = await fetch("/delete", {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
+    fetch(`/delete-file`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [header]: token, // CSRF 토큰을 헤더에 추가
+        },
+        body: JSON.stringify({ fileName, detailItemCode }),
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log("File deletion successful"); // 성공 로그 추가
+                displayFilesInModal(detailItemCode); // 파일 목록 갱신
+            } else {
+                console.error("File deletion failed:", response.status); // 실패 로그 추가
+                alert("파일 삭제에 실패했습니다.");
             }
+        })
+        .catch(error => {
+            console.error("파일 삭제 중 오류 발생:", error);
         });
-
-        if (response.ok) {
-            alert("파일이 성공적으로 삭제되었습니다.");
-            displayFiles(detailItemCode); // 파일 목록 갱신
-        } else {
-            alert("파일 삭제에 실패했습니다.");
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert("파일 삭제 중 오류가 발생했습니다.");
-    }
 }
-
 

@@ -354,25 +354,6 @@ public class MainController {
         return evidenceDataService.getLatestModificationInfo(detailItemCode);
     }
 
-    @DeleteMapping("/delete")
-    @ResponseBody
-    public ResponseEntity<?> deleteFile(@PathVariable String detailItemCode, @PathVariable String fileName) {
-        //String detailItemCode = (String) request.get("detailItemCode");
-        //String fileName = (String) request.get("fileName");
-
-        boolean success = evidenceDataService.deleteFile(detailItemCode, fileName);
-
-        // Debugging statements
-        System.out.println("mdic: " + detailItemCode);
-        System.out.println("mfn: " + fileName);
-
-        if (success) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName,
                                                  @RequestParam("detailItemCode") String detailItemCode,
@@ -407,6 +388,45 @@ public class MainController {
         }
     }
 
+    @PostMapping("/delete-file")
+    @ResponseBody
+    public ResponseEntity<Void> deleteFile(@RequestBody Map<String, String> payload) {
+        String fileName = payload.get("fileName");
+        String detailItemCode = payload.get("detailItemCode");
+
+        try {
+            evidenceDataService.deleteFile(detailItemCode, fileName);
+
+            // Debugging statements
+            System.out.println("mdic: " + detailItemCode);
+            System.out.println("mfn: " + fileName);
+
+            return ResponseEntity.ok().build(); // 성공 시 200 OK 반환
+        } catch (Exception e) {
+            e.printStackTrace(); // 로그에 에러 출력
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패 시 500 에러 반환
+        }
+    }
+
+
+//    @DeleteMapping("/delete")
+//    @ResponseBody
+//    public ResponseEntity<?> deleteFile(@PathVariable String detailItemCode, @PathVariable String fileName) {
+//        //String detailItemCode = (String) request.get("detailItemCode");
+//        //String fileName = (String) request.get("fileName");
+//
+//        boolean success = evidenceDataService.deleteFile(detailItemCode, fileName);
+//
+//        // Debugging statements
+//        System.out.println("mdic: " + detailItemCode);
+//        System.out.println("mfn: " + fileName);
+//
+//        if (success) {
+//            return ResponseEntity.ok().build();
+//        } else {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
 }
 
 //    @GetMapping("/download")
