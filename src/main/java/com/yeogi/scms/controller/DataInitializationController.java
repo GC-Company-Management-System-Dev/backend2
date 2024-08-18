@@ -23,7 +23,7 @@ public class DataInitializationController {
         boolean success = dataInitializationService.initializeDataForNewYear();
 
         if (success) {
-            return ResponseEntity.ok("데이터 초기화가 완료되었습니다.");
+            return ResponseEntity.ok("잠시만 기다려주세요.");
         } else {
             return ResponseEntity.status(500).body("데이터 초기화 중 오류가 발생했습니다.");
         }

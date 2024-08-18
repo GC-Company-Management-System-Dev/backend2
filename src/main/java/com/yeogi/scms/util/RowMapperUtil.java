@@ -85,6 +85,7 @@ public class RowMapperUtil {
         evidenceData.setFilePath(rs.getString("File_Path"));
         evidenceData.setCreatedAt(rs.getTimestamp("Created_At"));
         evidenceData.setCreator(rs.getString("Creator"));
+        evidenceData.setYear(rs.getInt("Year"));
 
         return evidenceData;
     }

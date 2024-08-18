@@ -6,12 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Calendar;
+import java.nio.file.Files;
+import java.util.*;
 import java.sql.Timestamp;
 import java.util.stream.Collectors;
+
+import com.google.cloud.storage.*;
+import com.google.firebase.cloud.StorageClient;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 @Service
 public class DataInitializationService {
@@ -24,6 +28,8 @@ public class DataInitializationService {
     private final OperationalStatusRepository operationalStatusRepository;
     private final EvidenceDataRepository evidenceDataRepository;
     private final MonthlyIndexInfoRepository monthlyIndexInfoRepository;
+    private final String bucketName = "scms-1862c.appspot.com";
+    private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
     @Autowired
     public DataInitializationService(
@@ -95,6 +101,47 @@ public class DataInitializationService {
         }
     }
 
+    public void uploadFileToFirebaseAndSave(EvidenceData newData, EvidenceData oldData) throws IOException {
+        // 기존 파일 경로
+        String oldFilePath = oldData.getFilePath();
+
+        // 새로운 파일 경로
+        String newFilePath = newData.getFilePath();
+
+        // 임시 파일 생성
+        File tempFile = File.createTempFile("temp", ".tmp");
+
+        try {
+            // Firebase에서 기존 파일 가져오기
+            Blob oldBlob = storage.get(BlobId.of(bucketName, oldFilePath));
+            if (oldBlob == null) {
+                throw new IOException("File not found in Firebase Storage: " + oldFilePath);
+            }
+
+            // 기존 파일을 임시 파일로 다운로드
+            oldBlob.downloadTo(tempFile.toPath());
+
+            // 새로운 경로로 파일 업로드
+            BlobId newBlobId = BlobId.of(bucketName, newFilePath);
+            BlobInfo newBlobInfo = BlobInfo.newBuilder(newBlobId).setContentType(oldBlob.getContentType()).build();
+            storage.create(newBlobInfo, Files.readAllBytes(tempFile.toPath()));
+
+            // 파일 업로드 성공 후 데이터베이스 저장
+            evidenceDataRepository.saveEvidenceData(newData);
+            System.out.println("Database updated successfully after file upload.");
+
+        } catch (Exception e) {
+            throw new IOException("Error during file upload and save process: " + e.getMessage(), e);
+        } finally {
+            // 임시 파일 삭제
+            try {
+                Files.deleteIfExists(tempFile.toPath());
+            } catch (IOException e) {
+                System.err.println("Failed to delete temp file: " + tempFile.getAbsolutePath());
+            }
+        }
+    }
+
 
     private List<SCMaster> getFilteredSCMasters() {
         return scMasterRepository.findAll().stream()
@@ -129,11 +176,18 @@ public class DataInitializationService {
                 .collect(Collectors.toList());
         operationalStatusRepository.saveAll(newOperationalStatuses);
 
-        // EvidenceData 수정 및 저장
-        List<EvidenceData> newEvidenceData = evidenceData.stream()
-                .map(this::createNewEvidenceDataForNextYear)
-                .collect(Collectors.toList());
-        evidenceDataRepository.saveAll(newEvidenceData);
+        // EvidenceData 수정 및 저장 (파일 업로드 성공 후에 저장)
+        for (EvidenceData oldData : evidenceData) {
+            EvidenceData newData = createNewEvidenceDataForNextYear(oldData);
+
+            // 파일 업로드가 성공한 후 데이터베이스에 저장
+            try {
+                uploadFileToFirebaseAndSave(newData, oldData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     // 각 데이터의 복사 및 수정 로직
@@ -228,17 +282,29 @@ public class DataInitializationService {
     private EvidenceData createNewEvidenceDataForNextYear(EvidenceData oldData) {
         EvidenceData newData = new EvidenceData();
 
-        // 기존 필드를 복사
+        // 기존 필드 복사
         newData.setFileName(oldData.getFileName());
         newData.setFileSize(oldData.getFileSize());
-        newData.setFilePath(oldData.getFilePath());
+        newData.setCreatedAt(oldData.getCreatedAt());
         newData.setCreator(oldData.getCreator());
 
-        // DetailItemCode만 업데이트
-        newData.setDetailItemCode(incrementDetailItemCode(oldData.getDetailItemCode()));
+        // DetailItemCode 갱신
+        String newDetailItemCode = incrementDetailItemCode(oldData.getDetailItemCode());
+        newData.setDetailItemCode(newDetailItemCode);
 
-        return newData;
+        // CertificationYear 갱신 (1 더하기)
+        newData.setYear(oldData.getYear() + 1);
+
+        // 새로운 경로 갱신
+        String newFilePath = newData.getYear() + "/" + newDetailItemCode + "/" + newData.getFileName();
+        newData.setFilePath(newFilePath);
+
+        // 새로운 파일 키 생성 (UUID)
+        newData.setFileKey(UUID.randomUUID());
+
+        return newData;  // 파일 업로드 후에 저장
     }
+
 
     private void updateMonthlyIndexInfo() {
         // (1) 제일 최근 생성된 행을 List로 가져옴
