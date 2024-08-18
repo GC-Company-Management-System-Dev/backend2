@@ -138,23 +138,23 @@
       document.getElementById("manageProgressCount").textContent = manageData.completedCount + '/' + manageData.totalCount;
       document.getElementById("manageProgressLabel").textContent = manageData.percentage + '%';
 
-      // Privacy 데이터 업데이트
-      document.getElementById("privacyProgressCount").textContent = privacyData.completedCount + '/' + privacyData.totalCount;
-      document.getElementById("privacyProgressLabel").textContent = privacyData.percentage + '%';
-
       // Protect 데이터 업데이트
       document.getElementById("protectProgressCount").textContent = protectData.completedCount + '/' + protectData.totalCount;
       document.getElementById("protectProgressLabel").textContent = protectData.percentage + '%';
+
+      // Privacy 데이터 업데이트
+      document.getElementById("privacyProgressCount").textContent = privacyData.completedCount + '/' + privacyData.totalCount;
+      document.getElementById("privacyProgressLabel").textContent = privacyData.percentage + '%';
 
       // 도넛 그래프 데이터 설정
       manageChart.data.datasets[0].data = [manageData.percentage, 100 - manageData.percentage];
       manageChart.update();
 
-      privacyChart.data.datasets[0].data = [privacyData.percentage, 100 - privacyData.percentage];
-      privacyChart.update();
-
       protectChart.data.datasets[0].data = [protectData.percentage, 100 - protectData.percentage];
       protectChart.update();
+
+      privacyChart.data.datasets[0].data = [privacyData.percentage, 100 - privacyData.percentage];
+      privacyChart.update();
     }
 
     function updateLineGraph(monthlyIndexInfo, monthlyCompletedBySCCode) {
@@ -168,24 +168,30 @@
               .filter(key => key !== 'certificationYear' && key !== 'createdAt')
               .sort((a, b) => monthlyIndexInfo[a] - monthlyIndexInfo[b]);
 
+      // 각 카테고리의 최대값
+      const maxManage = 16;  // 관리체계의 최대값
+      const maxProtect = 64; // 보호대책의 최대값
+      const maxPrivacy = 21; // 개인정보보호의 최대값
+
       sortedIndexes.forEach(month => {
         sortedLabels.push(month); // 인덱스에 대응하는 월을 그대로 라벨로 사용
-        sortedManageData.push(monthlyCompletedBySCCode.MANAGE[monthlyIndexInfo[month]] || 0);
-        sortedPrivacyData.push(monthlyCompletedBySCCode.PRIVACY[monthlyIndexInfo[month]] || 0);
-        sortedProtectData.push(monthlyCompletedBySCCode.PROTECT[monthlyIndexInfo[month]] || 0);
+
+        // 데이터를 비율로 변환 (각각의 최대값에 대한 비율로)
+        sortedManageData.push((monthlyCompletedBySCCode.MANAGE[monthlyIndexInfo[month]] || 0) / maxManage * 100);
+        sortedProtectData.push((monthlyCompletedBySCCode.PROTECT[monthlyIndexInfo[month]] || 0) / maxProtect * 100);
+        sortedPrivacyData.push((monthlyCompletedBySCCode.PRIVACY[monthlyIndexInfo[month]] || 0) / maxPrivacy * 100);
       });
 
       // 라인 그래프 데이터 설정
       monthlyProgressChart.data.labels = sortedLabels;
       monthlyProgressChart.data.datasets[0].data = sortedManageData;
-      monthlyProgressChart.data.datasets[1].data = sortedPrivacyData;
-      monthlyProgressChart.data.datasets[2].data = sortedProtectData;
+      monthlyProgressChart.data.datasets[1].data = sortedProtectData;
+      monthlyProgressChart.data.datasets[2].data = sortedPrivacyData;
       monthlyProgressChart.update();
     }
 
-
     // 도넛 그래프 초기화
-    var manageChart, privacyChart, protectChart, monthlyProgressChart;
+    var manageChart, protectChart, privacyChart, monthlyProgressChart;
 
     document.addEventListener('DOMContentLoaded', function () {
       function createDoughnutChart(ctx, data, title) {
@@ -221,7 +227,7 @@
         }]
       }, '관리체제 수립 및 운영');
 
-      privacyChart = createDoughnutChart(document.getElementById('privacyChart').getContext('2d'), {
+      protectChart = createDoughnutChart(document.getElementById('protectChart').getContext('2d'), {
         labels: ['진행율', '미진행율'],
         datasets: [{
           label: '보호대책 요구사항',
@@ -231,7 +237,7 @@
         }]
       }, '보호대책 요구사항');
 
-      protectChart = createDoughnutChart(document.getElementById('protectChart').getContext('2d'), {
+      privacyChart = createDoughnutChart(document.getElementById('privacyChart').getContext('2d'), {
         labels: ['진행율', '미진행율'],
         datasets: [{
           label: '개인정보 처리단계별 요구사항',
@@ -247,25 +253,29 @@
         labels: labels,
         datasets: [{
           label: '관리체계',
-          data: [],  // 초기값 빈 배열로 설정
+          data: [],  // 비율로 변환된 데이터
           fill: false,
           borderColor: 'rgb(252,4,49)',
-          tension: 0.1
+          tension: 0.1,
+          yAxisID: 'y' // 공통 Y축 사용
         },
           {
             label: '보호대책',
-            data: [],  // 초기값 빈 배열로 설정
+            data: [],  // 비율로 변환된 데이터
             fill: false,
             borderColor: 'rgb(255,218,75)',
-            tension: 0.1
+            tension: 0.1,
+            yAxisID: 'y' // 공통 Y축 사용
           },
           {
             label: '개인정보보호',
-            data: [],  // 초기값 빈 배열로 설정
+            data: [],  // 비율로 변환된 데이터
             fill: false,
             borderColor: 'rgb(109,189,14)',
-            tension: 0.1
-          }]
+            tension: 0.1,
+            yAxisID: 'y' // 공통 Y축 사용
+          }
+        ]
       };
 
       monthlyProgressChart = new Chart(lineCtx, {
@@ -274,13 +284,15 @@
         options: {
           maintainAspectRatio: false,
           scales: {
-            y: {
-              min: 0,  // Y축 최소값
-              max: 101,  // Y축 최대값을 101로 설정
+            y: { // 공통 Y축
+              type: 'linear',
+              position: 'left',
+              min: 0,
+              max: 100,  // Y축을 100%로 설정
               ticks: {
-                stepSize: 50,
-                callback: function (value) {
-                  return value === 0 || value === 50 || value === 100 ? value : '';
+                stepSize: 20,
+                callback: function(value) {
+                  return value + '%'; // 비율 표시
                 }
               }
             }
@@ -301,6 +313,7 @@
           animation: false
         }
       });
+
     });
   </script>
 
@@ -326,29 +339,29 @@
       <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
         <canvas id="manageChart"></canvas>
         <div class="progress-info">
-          <div class="progress-title">진행현황</div>
+          <div class="progress-title" style="font-size: 12px;">진행현황</div>
           <div class="progress-count" id="manageProgressCount"></div> <!-- Manage Count ID -->
           <div class="progress-label" id="manageProgressLabel"></div> <!-- Manage Label ID -->
         </div>
       </div>
 
-      <!-- 두 번째 도넛 그래프 -->
-      <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
-        <canvas id="privacyChart"></canvas>
-        <div class="progress-info">
-          <div class="progress-title">진행현황</div>
-          <div class="progress-count" id="privacyProgressCount"></div> <!-- Privacy Count ID -->
-          <div class="progress-label" id="privacyProgressLabel"></div> <!-- Privacy Label ID -->
-        </div>
-      </div>
-
-      <!-- 세 번째 도넛 그래프 -->
+      <!-- 두 번째 도넛 그래프 (보호대책 요구사항) -->
       <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
         <canvas id="protectChart"></canvas>
         <div class="progress-info">
-          <div class="progress-title">진행현황</div>
+          <div class="progress-title" style="font-size: 12px;">진행현황</div>
           <div class="progress-count" id="protectProgressCount"></div> <!-- Protect Count ID -->
           <div class="progress-label" id="protectProgressLabel"></div> <!-- Protect Label ID -->
+        </div>
+      </div>
+
+      <!-- 세 번째 도넛 그래프 (개인정보 처리단계별 요구사항) -->
+      <div class="chart-container" style="flex-basis: calc(33.33% - 20px); margin-bottom: 20px;">
+        <canvas id="privacyChart"></canvas>
+        <div class="progress-info">
+          <div class="progress-title" style="font-size: 12px;">진행현황</div>
+          <div class="progress-count" id="privacyProgressCount"></div> <!-- Privacy Count ID -->
+          <div class="progress-label" id="privacyProgressLabel"></div> <!-- Privacy Label ID -->
         </div>
       </div>
 

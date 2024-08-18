@@ -43,7 +43,12 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login")
                 .permitAll()
                 .and()
-            .csrf();
+            .csrf()
+                .and()
+            .sessionManagement()
+                .sessionFixation().migrateSession()  // 세션 고정 보호
+                .maximumSessions(1);  // 사용자당 하나의 세션만 허용
+
         return http.build();
     }
 
