@@ -69,30 +69,13 @@ public class EvidenceDataRepository {
     // detailItemCode에 해당하는 가장 최근 수정 일시와 변경자 조회
     public Map<String, Object> findLatestModificationInfoByDetailItemCode(String detailItemCode) {
         String sql = "SELECT MAX(Created_At) AS lastModified, Creator FROM Evidence_Data WHERE Detail_Item_Code = ? GROUP BY Creator ORDER BY lastModified DESC LIMIT 1";
-        return jdbcTemplate.query(sql, new Object[]{detailItemCode}, rs -> {
-            if (rs.next()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("lastModified", rs.getTimestamp("lastModified") != null ? rs.getTimestamp("lastModified").toLocalDateTime() : "N/A");
-                result.put("creator", rs.getString("Creator") != null ? rs.getString("Creator") : "N/A");
-                return result;
-            } else {
-                Map<String, Object> emptyResult = new HashMap<>();
-                emptyResult.put("lastModified", "N/A");
-                emptyResult.put("creator", "N/A");
-                return emptyResult;
-            }
+        return jdbcTemplate.queryForObject(sql, new Object[]{detailItemCode}, (rs, rowNum) -> {
+            Map<String, Object> result = new HashMap<>();
+            result.put("lastModified", rs.getTimestamp("lastModified").toLocalDateTime());
+            result.put("creator", rs.getString("Creator"));
+            return result;
         });
     }
-
-//    public Map<String, Object> findLatestModificationInfoByDetailItemCode(String detailItemCode) {
-//        String sql = "SELECT MAX(Created_At) AS lastModified, Creator FROM Evidence_Data WHERE Detail_Item_Code = ? GROUP BY Creator ORDER BY lastModified DESC LIMIT 1";
-//        return jdbcTemplate.queryForObject(sql, new Object[]{detailItemCode}, (rs, rowNum) -> {
-//            Map<String, Object> result = new HashMap<>();
-//            result.put("lastModified", rs.getTimestamp("lastModified").toLocalDateTime());
-//            result.put("creator", rs.getString("Creator"));
-//            return result;
-//        });
-//    }
 
 
     // 파일 정보 삭제
