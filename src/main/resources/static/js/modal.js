@@ -163,7 +163,7 @@ function saveChangesCertification(button) {
         return;
     }
 
-    fetch('/save-details/${detailItemCode}/update-certifContent', {
+    fetch(`/save-details/${detailItemCode}/update-certifContent`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ function saveChangesOperational(button) {
         return;
     }
 
-    fetch('/save-details/${detailItemCode}/update-operationalStatus', {
+    fetch(`/save-details/${detailItemCode}/update-operationalStatus`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -286,7 +286,7 @@ function saveChangesDefects(button) {
         return;
     }
 
-    fetch('/save-details/${detailItemCode}/update-defectManage', {
+    fetch(`/save-details/${detailItemCode}/update-defectManage`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
