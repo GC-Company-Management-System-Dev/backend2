@@ -22,7 +22,7 @@
 
 <main class="d-flex flex-nowrap">
     <div th:replace="fragments/sidebar :: sidebar"></div>
-    <div class="content p-4 main-contents">
+    <div class="content p-4 main-contents" style="overflow-y: scroll">
         <input type="hidden" id="detailItemCode" name="detailItemCode" th:value="${detailItemCode}">
         <p class="table_name" style="display: flex; align-items: center; margin-right: auto;" th:text="${detailItemTypeName}"> 세부 항목 이름</p>
         <div style="display: flex; align-items: center; margin-left: auto;">
