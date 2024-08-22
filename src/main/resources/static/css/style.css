@@ -620,20 +620,27 @@ input[type="checkbox"] {
   margin-bottom: 0;
 }
 
-.accordion-button[aria-expanded="false"]::after {
-  display: none;
-}
-
-.accordion-button.collapsed::after {
-  display: none;
-}
-
-/* 아코디언 버튼의 기본 상태에서 펼쳐진 스타일 적용 */
 .accordion-button {
-  /* collapsed 상태를 방지하기 위한 기본 설정 */
-  aria-expanded: true;
-  /* 필요시 스타일 추가 */
+  /* 기존에 collapsed 상태를 설정하는 CSS를 제거하고 항상 펼쳐진 상태로 유지 */
+  display: block;
 }
+
+.accordion-collapse {
+  display: block !important;
+}
+
+.accordion-button::after {
+  display: none;
+}
+
+
+/*.accordion-button[aria-expanded="false"]::after {*/
+/*  display: none;*/
+/*}*/
+
+/*.accordion-button.collapsed::after {*/
+/*  display: none;*/
+/*}*/
 
 /* ul이나 li 태그에 대해 list-style-type 속성을 none으로 설정 */
 ul {

@@ -711,7 +711,7 @@ function displayFiles(detailItemCode) {
                         <div class="header">
                             <span class="name">${file.fileName}</span>
                             <span class="size">${formatFileSize(file.fileSize)}</span>
-                            <button class="download-btn" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}&year=${year}', '${file.fileName}')">download</button>
+                            <button class="download-btn" style="border-radius: 5px" onclick="downloadFile('/download?fileName=${encodedFileName}&detailItemCode=${detailItemCode}&year=${year}', '${file.fileName}')">download</button>
 <!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${encodedFileName}">download</a>-->
 <!--                            <a href="/download?fileName=${file.name}&detailItemCode=${detailItemCode}" download="${file.name}">download</a>-->
 <!--                            <button class="download-btn" onclick="downloadFile('${file.url}')">download</button>-->
