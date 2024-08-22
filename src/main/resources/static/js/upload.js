@@ -140,39 +140,67 @@ const storageRef = ref(storage);
 // const storageRef = storage.ref();
 // const storageRef = firebase.storage().ref(fileName);
 
+function isFileExtensionAllowed(fileName) {
+    // 허용된 확장자
+    const allowedExtensions = ['pptx', 'docx', 'bmp', 'doc', 'gif', 'hwp', 'jpeg', 'pdf', 'png', 'txt', 'zip'];
+
+    const fileExtension = fileName.split('.').pop().toLowerCase();
+    return allowedExtensions.includes(fileExtension);
+}
+
 function handleFormSubmit(e) {
     e.preventDefault();
+
     const form = document.getElementById('editForm-proof');
     const formData = new FormData(form);
 
-    // 드래그 앤 드롭된 파일들 추가
-    const droppedFiles = dropFile.getDroppedFiles();
-
-    // 드래그 앤 드롭된 파일이 제대로 넘어오는지 확인
-    console.log('Files to upload::', droppedFiles);  // 로그로 확인
-
     const inputFiles = document.getElementById('chooseFile').files;
 
-    // 선택된 파일들과 드래그 앤 드롭된 파일들 합치기
-    const allFiles = [...droppedFiles, ...inputFiles];
+    for (let file of inputFiles) {
+        if (!isFileExtensionAllowed(file.name)) {
+            alert(`허용되지 않은 파일 형식입니다: ${file.name}`);
+            return; // 허용되지 않은 파일이 있으면 업로드를 중단
+        }
+        formData.append('files', file); // 파일 추가
+    }
 
-    // FormData에 파일들을 추가
-    allFiles.forEach((file, index) => {
-        formData.append('file' + index, file); // 파일을 개별적으로 추가
-        console.log('Uploading file:', file.name);
-    });
-
-    // 서버로 폼 데이터 전송
     fetch('/upload', {
         method: 'POST',
         body: formData,
+        headers: {
+            [header]: token
+        }
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayFiles(document.getElementById("detailItemCode").value);  // 업로드된 파일 목록을 갱신
+        .then(response => {
+            // 응답의 Content-Type 확인
+            const contentType = response.headers.get('content-type');
+
+            if (contentType && contentType.includes('application/json')) {
+                displayFiles(document.getElementById("detailItemCode").value);
+                closeModal('editModal-proof');
+                // JSON 응답인 경우
+                return response.json();
+            } else if (contentType && contentType.includes('text/html')) {
+                displayFiles(document.getElementById("detailItemCode").value);
+                closeModal('editModal-proof');
+                // HTML 응답인 경우
+                return response.text();  // HTML을 텍스트로 처리
             } else {
-                console.error("파일 업로드 실패:", data.message);
+                throw new Error("알 수 없는 응답 형식입니다.");
+            }
+        })
+        .then(data => {
+            if (typeof data === 'object') {
+                // JSON 응답 처리
+                if (data.success) {
+                    displayFiles(document.getElementById("detailItemCode").value);
+                } else {
+                    console.error("파일 업로드 실패:", data.message);
+                }
+            } else {
+                // HTML 응답 처리
+                console.log("서버로부터 HTML 응답을 받았습니다:", data);
+                // 필요시 HTML 응답 처리 로직 추가
             }
         })
         .catch(error => {
@@ -181,6 +209,128 @@ function handleFormSubmit(e) {
 }
 
 
+
+// function handleFormSubmit(e) {
+//     e.preventDefault();
+//     const form = document.getElementById('editForm-proof');
+//     const formData = new FormData(form);
+//
+//     // 허용된 파일 확장자 배열
+//     const allowedExtensions = ['pptx', 'docx', 'bmp', 'doc', 'gif', 'hwp', 'jpeg', 'pdf', 'png', 'txt', 'zip'];
+//
+//     const inputFiles = document.getElementById('chooseFile').files;
+//     let validFiles = [];
+//
+//     // FormData에 파일들을 추가하기 전에 확장자 검사
+//     Array.from(inputFiles).forEach((file, index) => {
+//         const fileExtension = file.name.split('.').pop().toLowerCase();
+//
+//         if (allowedExtensions.includes(fileExtension)) {
+//             formData.append('file' + index, file); // 파일을 개별적으로 추가
+//             validFiles.push(file); // 유효한 파일을 리스트에 추가
+//             console.log('Uploading file:', file.name);
+//         } else {
+//             console.warn('파일 업로드가 허용되지 않음:', file.name);
+//         }
+//     });
+//
+//     // 유효한 파일이 있을 때만 업로드 요청 전송
+//     if (validFiles.length > 0) {
+//         fetch('/upload', {
+//             method: 'POST',
+//             body: formData,
+//         })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     displayFiles(document.getElementById("detailItemCode").value);  // 업로드된 파일 목록을 갱신
+//                 } else {
+//                     console.error("파일 업로드 실패:", data.message);
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("파일 업로드 중 오류 발생:", error);
+//             });
+//     } else {
+//         console.warn('유효한 파일이 없습니다. 업로드 요청을 보내지 않습니다.');
+//     }
+// }
+
+
+
+
+// function handleFormSubmit(e) {
+//     e.preventDefault();
+//     const form = document.getElementById('editForm-proof');
+//     const formData = new FormData(form);
+//
+//     const inputFiles = document.getElementById('chooseFile').files;
+//
+//     // FormData에 파일들을 추가
+//     inputFiles.forEach((file, index) => {
+//         formData.append('file' + index, file); // 파일을 개별적으로 추가
+//         console.log('Uploading file:', file.name);
+//     });
+//
+//     // 서버로 폼 데이터 전송
+//     // 확장자 검사 추가
+//     fetch('/upload', {
+//         method: 'POST',
+//         body: formData,
+//     })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 displayFiles(document.getElementById("detailItemCode").value);  // 업로드된 파일 목록을 갱신
+//             } else {
+//                 console.error("파일 업로드 실패:", data.message);
+//             }
+//         })
+//         .catch(error => {
+//             console.error("파일 업로드 중 오류 발생:", error);
+//         });
+// }
+
+// function handleFormSubmit(e) {
+//     e.preventDefault();
+//     const form = document.getElementById('editForm-proof');
+//     const formData = new FormData(form);
+//
+//     // 드래그 앤 드롭된 파일들 추가
+//     const droppedFiles = dropFile.getDroppedFiles();
+//
+//     // 드래그 앤 드롭된 파일이 제대로 넘어오는지 확인
+//     console.log('Files to upload::', droppedFiles);  // 로그로 확인
+//
+//     const inputFiles = document.getElementById('chooseFile').files;
+//
+//     // 선택된 파일들과 드래그 앤 드롭된 파일들 합치기
+//     const allFiles = [...droppedFiles, ...inputFiles];
+//
+//     // FormData에 파일들을 추가
+//     allFiles.forEach((file, index) => {
+//         formData.append('file' + index, file); // 파일을 개별적으로 추가
+//         console.log('Uploading file:', file.name);
+//     });
+//
+//     // 서버로 폼 데이터 전송
+//     // 확장자 검사 추가
+//     fetch('/upload', {
+//         method: 'POST',
+//         body: formData,
+//     })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 displayFiles(document.getElementById("detailItemCode").value);  // 업로드된 파일 목록을 갱신
+//             } else {
+//                 console.error("파일 업로드 실패:", data.message);
+//             }
+//         })
+//         .catch(error => {
+//             console.error("파일 업로드 중 오류 발생:", error);
+//         });
+// }
 
 
 // function handleFormSubmit(e) {
@@ -378,9 +528,9 @@ function handleFormSubmit(e) {
 // }
 //
 
-document.getElementById('chooseFile').addEventListener('change', function(e) {
-    dropFile.handleFiles(e.target.files);
-});
+// document.getElementById('chooseFile').addEventListener('change', function(e) {
+//     dropFile.handleFiles(e.target.files);
+// });
 
 // function handleFormSubmit() {
 //     const form = document.getElementById('editForm-proof');
