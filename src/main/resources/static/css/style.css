@@ -628,4 +628,17 @@ input[type="checkbox"] {
   display: none;
 }
 
+/* 아코디언 버튼의 기본 상태에서 펼쳐진 스타일 적용 */
+.accordion-button {
+  /* collapsed 상태를 방지하기 위한 기본 설정 */
+  aria-expanded: true;
+  /* 필요시 스타일 추가 */
+}
+
+/* ul이나 li 태그에 대해 list-style-type 속성을 none으로 설정 */
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
 
