@@ -22,7 +22,7 @@
 
 <main class="d-flex flex-nowrap">
     <div th:replace="fragments/sidebar :: sidebar"></div>
-    <div class="content p-4 main-contents">
+    <div class="content p-4 main-contents" style="overflow-y: scroll">
         <input type="hidden" id="detailItemCode" name="detailItemCode" th:value="${detailItemCode}">
         <p class="table_name" style="display: flex; align-items: center; margin-right: auto;" th:text="${detailItemTypeName}"> 세부 항목 이름</p>
         <div style="display: flex; align-items: center; margin-left: auto;">
@@ -80,23 +80,23 @@
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <table class="modal-table">
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modificationDate1">일시</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modificationDate1">일시</label></th>
                                 <td><input type="text" id="modificationDate1" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modifier1">변경자</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modifier1">변경자</label></th>
                                 <td><input type="text" id="modifier1" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 30%">
-                                <th style="width: 20%; text-align: right;"><label for="certificationStandard">인증기준</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="certificationStandard">인증기준</label></th>
                                 <td colspan="2"><textarea id="certificationStandard" name="certificationStandard" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                             <tr style="height: 40%">
-                                <th style="width: 20%; text-align: right;"><label for="majorPoints">주요 확인사항</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="majorPoints">주요 확인사항</label></th>
                                 <td colspan="2"><textarea id="majorPoints" name="majorPoints" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="relatedLaws">관련 법규</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="relatedLaws">관련 법규</label></th>
                                 <td colspan="2"><textarea id="relatedLaws" name="relatedLaws" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                         </table>
@@ -149,23 +149,23 @@
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modificationDate2">일시</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modificationDate2">일시</label></th>
                                 <td><input type="text" id="modificationDate2" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modifier2">변경자</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modifier2">변경자</label></th>
                                 <td><input type="text" id="modifier2" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 60%">
-                                <th style="width: 20%; text-align: right;"><label for="currentSituation">현황</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="currentSituation">현황</label></th>
                                 <td colspan="2"><textarea id="currentSituation" name="currentSituation" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="documentName">문서명</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="documentName">문서명</label></th>
                                 <td colspan="2"><textarea id="documentName" name="documentName" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="evidenceName">증적명</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="evidenceName">증적명</label></th>
                                 <td colspan="2"><textarea id="evidenceName" name="evidenceName" style="width: 100%; height: 100%" required></textarea></td>
                             </tr>
                         </table>
@@ -178,7 +178,7 @@
 
             <!-- 섹션 4: 증적자료 -->
             <div class="section" style="grid-column: 1; grid-row: 2; width: 100%; height: 100%; overflow-y: auto;">
-                <div style="display: flex; align-items: center;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
                     <h2>증적자료</h2>
                     <button type="button" class="default-button btn-primary d-block ml-auto" style="margin-left: auto;" onclick="openModal('editModal-proof', this.id)" th:value="${detailItemCode}">수정</button>
                     <input type="hidden" name="detailItemCode" th:value="${detailItemCode}">
@@ -210,11 +210,11 @@
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modificationDate3">일시</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modificationDate3">일시</label></th>
                                 <td><input type="text" id="modificationDate3" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modifier3">변경자</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modifier3">변경자</label></th>
                                 <td><input type="text" id="modifier3" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 80%">
@@ -225,8 +225,8 @@
                                         <div class="contents">
                                             <div class="upload-box">
                                                 <div id="drop-file" class="drag-file">
-                                                    <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일 아이콘" class="image">
-                                                    <p class="message">Drag files to upload</p>
+<!--                                                    <img src="https://img.icons8.com/pastel-glyph/2x/image-file.png" alt="파일 아이콘" class="image">-->
+<!--                                                    <p class="message">Drag files to upload</p>-->
 <!--                                                    <input type="file" class="file" id="dropFile" style="display: none;" multiple onchange="dropFile.handleFiles(this.files)">-->
                                                 </div>
                                                 <label class="file-label" for="chooseFile">파일 선택</label>
@@ -254,7 +254,8 @@
                                 </td>
                             </tr>
                         </table>
-                        <button type="submit" id="modal-button-proof" class="modal-button" onclick="handleFormSubmit()">등록하기</button>
+                        <button type="submit" id="modal-button-proof" class="modal-button" onclick="handleFormSubmit(event)">등록하기</button>
+<!--                        <button type="submit" id="modal-button-proof" class="modal-button" onclick="handleFormSubmit(event)">등록하기</button>-->
 <!--                        <button type="submit" id="modal-button-proof" class="modal-button" onclick="uploadFile(dropFile)">등록하기</button>-->
 <!--                        th:each="evidenceData : ${evidenceDatas}"-->
 <!--                        th:attr="data-detail-item-code=${evidenceData.detailItemCode}"-->
@@ -320,15 +321,15 @@
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/> <!-- CSRF 토큰 추가 -->
                         <table class="modal-table">
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modificationDate4">일시</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modificationDate4">일시</label></th>
                                 <td><input type="text" id="modificationDate4" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="modifier4">변경자</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="modifier4">변경자</label></th>
                                 <td><input type="text" id="modifier4" style="width: 100%; height: 100%" readonly></td>
                             </tr>
                             <tr style="height: 10%">
-                                <th style="width: 20%; text-align: right;"><label for="certificationType">인증 구분</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="certificationType">인증 구분</label></th>
                                 <td>
                                     <select id="certificationType" name="certificationType" style="width: 100%; height: 100%">
                                         <option value="ISMS-P">ISMS-P</option>
@@ -339,7 +340,7 @@
                                 </td>
                             </tr>
                             <tr style="height: 80%">
-                                <th style="width: 20%; text-align: right;"><label for="defectContent">결함 내용</label></th>
+                                <th style="width: 20%; text-align: center;"><label for="defectContent">결함 내용</label></th>
                                 <td colspan="2">
                                     <textarea id="defectContent" name="defectContent" style="width: 100%; height: 100%" required></textarea>
                                     <input type="hidden" data-certification="ISMS-P" value="${defectManage.ismsP}">
