@@ -242,7 +242,8 @@ a {
 }
 
 .grid-container .section {
-  border: 1px solid black;
+  background-color: #e9dfdf; /* 기본 배경색 */
+  /*border: 1px solid black;*/
   padding: 20px;
   display: flex;
   flex-direction: column; /* 섹션을 수직으로 정렬하기 위해 column으로 설정 */
