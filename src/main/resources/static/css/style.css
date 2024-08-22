@@ -469,8 +469,8 @@ input[type="checkbox"] {
 }
 
 .chart-container {
-  width: 350px; /* 원하는 가로 크기 */
-  height: 350px; /* 세로 크기 */
+  width: 270px; /* 원하는 가로 크기 */
+  height: 270px; /* 세로 크기 */
   align-items: center;
   justify-content: center; /* 가로로 가운데 정렬 */
   padding: 0 40px;
