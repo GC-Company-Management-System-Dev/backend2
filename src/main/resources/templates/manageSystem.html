@@ -33,19 +33,19 @@
                 <th class="col-1">PCI-DSS</th>
             </tr>
             <tr th:each="scmMaster : ${scmMasters}">
-                <td th:text="${scmMaster.certificationTypeName}" style="height: 200px;"></td>
-                <td style="height: 200px;">
+                <td class="padding" th:text="${scmMaster.certificationTypeName}" style="height: 200px;"></td>
+                <td class="padding" style="height: 200px;">
                     <ul>
                         <li th:each="detail : ${certifDetails[scmMaster.documentCode]}">
                             <a th:href="@{'/manage-system/' + ${detail.detailItemCode}}" th:text="${detail.detailItemTypeName}"></a>
                         </li>
                     </ul>
                 </td>
-                <td style="height: 200px;">
+                <td class="padding" style="height: 200px;">
                     <div th:text="${scmMaster.isoDetails}" th:attr="id='isoDetailsDiv-'+${scmMaster.documentCode}"></div>
                     <textarea class="full-width hidden" th:attr="id='isoDetailsTextarea-'+${scmMaster.documentCode}"></textarea>
                 </td>
-                <td style="height: 200px;">
+                <td class="padding" style="height: 200px;">
                     <div th:text="${scmMaster.pciDssDetails}" th:attr="id='pciDssDiv-'+${scmMaster.documentCode}"></div>
                     <textarea class="full-width hidden" th:attr="id='pciDssTextarea-'+${scmMaster.documentCode}"></textarea>
                 </td>
