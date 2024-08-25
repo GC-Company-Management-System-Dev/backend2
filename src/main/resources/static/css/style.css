@@ -20,7 +20,7 @@ body {
 
   color:rgba(0,0,0,0.87);
   line-height:1.5;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .mt-5 {
@@ -242,7 +242,8 @@ a {
 }
 
 .grid-container .section {
-  border: 1px solid black;
+  background-color: #e9dfdf; /* 기본 배경색 */
+  /*border: 1px solid black;*/
   padding: 20px;
   display: flex;
   flex-direction: column; /* 섹션을 수직으로 정렬하기 위해 column으로 설정 */
@@ -360,25 +361,25 @@ input[type="checkbox"] {
   align-items: center;
 }
 
-.contents .upload-box .drag-file {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border: 3px dashed #dbdbdb;
-}
-.contents .upload-box .drag-file.highlight {
-  border: 3px dashed red;
-}
-.contents .upload-box .drag-file .image {
-  margin-top: 10px;
-  width: 40px;
-}
-.contents .upload-box .drag-file .message {
-  /* margin-bottom: 0; */
-}
+/*.contents .upload-box .drag-file {*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
+/*  border: 3px dashed #dbdbdb;*/
+/*}*/
+/*.contents .upload-box .drag-file.highlight {*/
+/*  border: 3px dashed red;*/
+/*}*/
+/*.contents .upload-box .drag-file .image {*/
+/*  margin-top: 10px;*/
+/*  width: 40px;*/
+/*}*/
+/*.contents .upload-box .drag-file .message {*/
+/*  !* margin-bottom: 0; *!*/
+/*}*/
 .contents .upload-box .file-label {
   margin-top: 10px;
   margin-left: auto;
@@ -469,8 +470,8 @@ input[type="checkbox"] {
 }
 
 .chart-container {
-  width: 350px; /* 원하는 가로 크기 */
-  height: 350px; /* 세로 크기 */
+  width: 270px; /* 원하는 가로 크기 */
+  height: 270px; /* 세로 크기 */
   align-items: center;
   justify-content: center; /* 가로로 가운데 정렬 */
   padding: 0 40px;
@@ -619,12 +620,40 @@ input[type="checkbox"] {
   margin-bottom: 0;
 }
 
-.accordion-button[aria-expanded="false"]::after {
+.accordion-button {
+  /* 기존에 collapsed 상태를 설정하는 CSS를 제거하고 항상 펼쳐진 상태로 유지 */
+  display: block;
+}
+
+.accordion-collapse {
+  display: block !important;
+}
+
+.accordion-button::after {
   display: none;
 }
 
-.accordion-button.collapsed::after {
-  display: none;
+
+/*.accordion-button[aria-expanded="false"]::after {*/
+/*  display: none;*/
+/*}*/
+
+/*.accordion-button.collapsed::after {*/
+/*  display: none;*/
+/*}*/
+
+/* ul이나 li 태그에 대해 list-style-type 속성을 none으로 설정 */
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+td.padding {
+  padding: 10px;
+}
+
+td.no-padding {
+  padding: 0;
 }
 
 

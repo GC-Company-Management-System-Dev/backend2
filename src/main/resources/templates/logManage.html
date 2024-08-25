@@ -26,6 +26,32 @@
             color: lightgray;
             pointer-events: none;
         }
+
+        /* 가운데 정렬 스타일 추가 */
+        .center-align {
+            text-align: center;
+        }
+
+        /* 표 열 너비 조정 */
+        .col-no {
+            width: 10%; /* NO 열의 너비 */
+        }
+
+        .col-act {
+            width: 10%; /* ACT 열의 너비 */
+        }
+
+        .col-user {
+            width: 30%; /* 접속자 열의 너비 */
+        }
+
+        .col-path {
+            width: 30%; /* PATH 열의 너비 */
+        }
+
+        .col-timestamp {
+            width: 20%; /* 접속시간 열의 너비 */
+        }
     </style>
 
 </head>
@@ -39,20 +65,20 @@
         <table style="width:100%">
             <thead>
             <tr>
-                <th class="col-1" scope="col" style="height: 50px;">NO</th>
-                <th class="col-1" scope="col" style="height: 50px;">접속자</th>
-                <th class="col-1" scope="col" style="height: 50px;">ACT</th>
-                <th class="col-1" scope="col" style="height: 50px;">PATH</th>
-                <th class="col-1" scope="col" style="height: 50px;">접속시간</th>
+                <th class="col-no col-1" scope="col" style="height: 50px;">NO</th>
+                <th class="col-user col-1" scope="col" style="height: 50px;">접속자</th>
+                <th class="col-act col-1" scope="col" style="height: 50px;">ACT</th>
+                <th class="col-path col-1" scope="col" style="height: 50px;">PATH</th>
+                <th class="col-timestamp col-1" scope="col" style="height: 50px;">접속시간</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="log, iterStat : ${logs}">
-                <td style="height: 50px;" th:text="${log.logSequence}"></td>
-                <td th:text="${log.accessId}"></td>
-                <td th:text="${log.action}"></td>
-                <td th:text="${log.accessPath}"></td>
-                <td th:text="${log.timestamp}"></td>
+                <td class="col-no center-align" style="height: 50px;" th:text="${log.logSequence}"></td>
+                <td class="col-user center-align" th:text="${log.accessId}"></td>
+                <td class="col-act center-align" th:text="${log.action}"></td>
+                <td class="col-path" th:text="${log.accessPath}"></td>
+                <td class="col-timestamp center-align" th:text="${log.timestamp}"></td>
             </tr>
             </tbody>
         </table>

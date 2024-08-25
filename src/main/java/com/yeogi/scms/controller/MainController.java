@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -347,6 +348,54 @@ public class MainController {
 
         return "redirect:" + redirectUrl;
     }
+
+//    @PostMapping("/upload")
+//    public ResponseEntity<Map<String, Object>> handleFileUpload(@RequestParam("file") MultipartFile[] files,
+//                                                                @RequestParam("detailItemCode") String detailItemCode) {
+//        Map<String, Object> response = new HashMap<>();
+//        try {
+//            for (MultipartFile file : files) {
+//                String fileName = evidenceDataService.uploadFile(file, detailItemCode);
+//                response.put("message", "File uploaded successfully: " + fileName);
+//            }
+//            response.put("success", true);
+//        } catch (IOException e) {
+//            response.put("success", false);
+//            response.put("message", "Failed to upload file.");
+//        }
+//
+//        return ResponseEntity.ok(response);
+//    }
+
+//    @PostMapping("/upload")
+//    public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
+//                                   @RequestParam("detailItemCode") String detailItemCode,
+//                                   RedirectAttributes redirectAttributes) {
+//
+//        try {
+//            for (MultipartFile file : files) {
+//                String fileName = evidenceDataService.uploadFile(file, detailItemCode);
+//                redirectAttributes.addFlashAttribute("message", "File uploaded successfully: " + fileName);
+//            }
+//        } catch (IOException e) {
+//            redirectAttributes.addFlashAttribute("message", "Failed to upload file.");
+//        }
+//
+//        // 리다이렉트 URL 결정
+//        String redirectUrl;
+//        if (detailItemCode.startsWith("MNG")) {
+//            redirectUrl = "/manage-system/" + detailItemCode;
+//        } else if (detailItemCode.startsWith("PRT")) {
+//            redirectUrl = "/protect-measures/" + detailItemCode;
+//        } else if (detailItemCode.startsWith("PRC")) {
+//            redirectUrl = "/privacy-require/" + detailItemCode;
+//        } else {
+//            redirectUrl = "/"; // 기본 리다이렉트 URL
+//        }
+//
+//        return "redirect:" + redirectUrl;
+//    }
+
 
     //Firebase 스토리지에서 파일 조회
 //    @GetMapping("/files/{detailItemCode}")
