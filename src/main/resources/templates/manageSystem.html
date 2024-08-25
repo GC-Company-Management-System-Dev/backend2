@@ -13,6 +13,72 @@
         .hidden {
             display: none !important;
         }
+
+        table th {
+            padding: 0;
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 20px;
+            white-space: nowrap;
+            height: 150px;
+        }
+
+        ul{
+            list-style-type: none;
+            padding-left: 0;
+            margin-left: 0;
+        }
+
+        /* ISO 및 PCI-DSS 열에 고정 너비 설정 */
+        th.iso-column, td.iso-column {
+            min-width: 250px; /* ISO 열의 고정 너비 */
+        }
+
+        /* PCI-DSS 열의 너비를 넓히기 위한 CSS */
+        th.pci-dss-column, td.pci-dss-column {
+            min-width: 250px; /* 원하는 너비로 설정 */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .main-contents {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        ul li a {
+            white-space: nowrap; /* 줄바꿈 방지 */
+        }
+
+        /* 텍스트 영역이 셀을 가득 채우도록 설정 */
+        textarea.full-width {
+            width: 100%;
+            height: 100%;
+            resize: none;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        /* td 내부에서 div가 전체 크기를 차지하도록 설정 */
+        td > div {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
     </style>
 </head>
 <body>
@@ -26,30 +92,30 @@
                 <th class="col-1" rowspan="2">구분</th>
                 <th class="col-1" rowspan="2">세부항목</th>
                 <th class="col-1" colspan="2">심사구분</th>
-                <th class="col-1" rowspan="2"></th>
+                <th class="col-1" rowspan="2">수정/확인</th>
             </tr>
             <tr>
-                <th class="col-1">ISO 27001/27017/27018/27701</th>
-                <th class="col-1">PCI-DSS</th>
+                <th class="col-1 iso-column">ISO 27001/27017/27018/27701</th>
+                <th class="col-1 pci-dss-column">PCI-DSS</th>
             </tr>
             <tr th:each="scmMaster : ${scmMasters}">
-                <td th:text="${scmMaster.certificationTypeName}" style="height: 200px;"></td>
-                <td style="height: 200px;">
+                <td th:text="${scmMaster.certificationTypeName}"></td>
+                <td>
                     <ul>
                         <li th:each="detail : ${certifDetails[scmMaster.documentCode]}">
                             <a th:href="@{'/manage-system/' + ${detail.detailItemCode}}" th:text="${detail.detailItemTypeName}"></a>
                         </li>
                     </ul>
                 </td>
-                <td style="height: 200px;">
+                <td>
                     <div th:text="${scmMaster.isoDetails}" th:attr="id='isoDetailsDiv-'+${scmMaster.documentCode}"></div>
                     <textarea class="full-width hidden" th:attr="id='isoDetailsTextarea-'+${scmMaster.documentCode}"></textarea>
                 </td>
-                <td style="height: 200px;">
+                <td>
                     <div th:text="${scmMaster.pciDssDetails}" th:attr="id='pciDssDiv-'+${scmMaster.documentCode}"></div>
                     <textarea class="full-width hidden" th:attr="id='pciDssTextarea-'+${scmMaster.documentCode}"></textarea>
                 </td>
-                <td style="height: 200px; text-align: center; vertical-align: middle;">
+                <td style="text-align: center; vertical-align: middle;">
                     <button type="button" class="default-button btn-primary d-block mx-auto edit-btn"
                             th:attr="data-doc-code=${scmMaster.documentCode}">수정</button>
                     <button type="button" class="default-button btn-primary d-block mx-auto save-btn hidden"
