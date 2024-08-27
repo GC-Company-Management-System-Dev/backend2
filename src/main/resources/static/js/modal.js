@@ -80,11 +80,25 @@ function openModal(modalId, buttonId) {
         var iso27kData = iso27kDataElement ? iso27kDataElement.getAttribute('data-iso-27k') : "";
         var pciDssData = pciDssDataElement ? pciDssDataElement.getAttribute('data-pci-dss') : "";
 
-        // 수정일과 수정자를 항상 가져옴
-        var modificationDateElement = document.querySelector('[data-modification-date]');
-        var modifierElement = document.querySelector('[data-modifier]');
+        // 결함 관리에 대한 데이터를 가져옴
+        var defectManagementElement = document.querySelector('#defects-management');
+
+        // 결함 관리의 수정 일시와 변경자 데이터를 가져옴
+        var modificationDateElement = defectManagementElement.querySelector('[data-modification-date]');
+        var modifierElement = defectManagementElement.querySelector('[data-modifier]');
+
         var modificationDate = modificationDateElement ? modificationDateElement.getAttribute('data-modification-date') : "N/A";
         var modifier = modifierElement ? modifierElement.getAttribute('data-modifier') : "N/A";
+
+        // 수정일과 변경자를 모달의 입력 필드에 설정
+        document.getElementById("modificationDate4").value = modificationDate;
+        document.getElementById("modifier4").value = modifier;
+
+        // // 수정일과 수정자를 항상 가져옴
+        // var modificationDateElement = document.querySelector('[data-modification-date]');
+        // var modifierElement = document.querySelector('[data-modifier]');
+        // var modificationDate = modificationDateElement ? modificationDateElement.getAttribute('data-modification-date') : "N/A";
+        // var modifier = modifierElement ? modifierElement.getAttribute('data-modifier') : "N/A";
 
 
         // 인증 구분 선택 시 해당 데이터를 표시
@@ -104,10 +118,6 @@ function openModal(modalId, buttonId) {
 
         // 초기화 (모달 열릴 때 기본 선택값에 따른 데이터 표시)
         certificationTypeSelect.dispatchEvent(new Event('change'));
-
-        // 수정일과 수정자 설정
-        document.getElementById("modificationDate4").value = modificationDate;
-        document.getElementById("modifier4").value = modifier;
     } else if (modalId === 'editModal-proof') {
 
         document.getElementById(modalId).style.display = "block";
