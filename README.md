@@ -14,4 +14,4 @@
 - Java 11
 - Spring Boot
 - Thymeleaf
-- MySQL
+- Amazon RDS for MySQL
